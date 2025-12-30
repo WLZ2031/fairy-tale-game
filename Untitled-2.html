@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>經典童話故事排序遊戲</title>
+<style>
+  body { 
+    font-family: "Microsoft JhengHei", "微軟正黑體", Arial, sans-serif; 
+    text-align: center; 
+    background: linear-gradient(to bottom, #e0f7fa, #ffffff); 
+    margin: 0; padding: 20px; 
+  }
+  h1 { color: #006064; margin-bottom: 10px; }
+  .subtitle { color: #00838f; margin-bottom: 40px; }
+
+  /* 修正：目錄頁面改為自動換行並限制寬度，確保 9 個按鈕都能整齊顯示 */
+  .menu { 
+    display: flex; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 20px; 
+    max-width: 1000px;
+    margin: 40px auto; 
+  }
+  .story-btn {
+    width: 180px; 
+    height: 120px; 
+    background: white; 
+    border-radius: 16px; 
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    cursor: pointer; 
+    font-size: 18px; 
+    font-weight: bold; 
+    color: #006064;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    transition: all 0.3s;
+  }
+  .story-btn:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.15); }
+
+  .game { display: none; max-width: 1100px; margin: 30px auto; }
+  .top { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 50px; }
+  .top-title { font-size: 24px; color: #006064; margin-bottom: 20px; }
+  #source { display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; min-height: 180px; }
+  .top img { width: 180px; height: 180px; object-fit: cover; border-radius: 12px; cursor: move; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+  .bottom { background: white; padding: 40px 30px; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+  .bottom-title { font-size: 24px; color: #006064; margin-bottom: 30px; }
+  .positions { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+  .slot-wrapper { position: relative; }
+  .slot { width: 200px; height: 200px; background: #f8fdff; border: 3px dashed #80deea; border-radius: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+  .number { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); font-size: 28px; font-weight: bold; color: #006064; }
+  button { margin: 30px 15px; padding: 14px 40px; font-size: 20px; border: none; border-radius: 10px; cursor: pointer; }
+  #check { background: #00bfa5; color: white; }
+  #back { background: #42a5f5; color: white; }
+  .message { font-size: 28px; font-weight: bold; margin: 30px; min-height: 50px; }
+  .correct { color: #00c853; }
+  .wrong { color: #d50000; }
+</style>
+</head>
+<body>
+
+<h1>經典童話故事排序遊戲</h1>
+<p class="subtitle">請選擇一個故事，把圖片按正確順序拖到下方吧！</p>
+
+<div class="menu" id="menu">
+  <div class="story-btn" data-story="pigs">三隻小豬</div>
+  <div class="story-btn" data-story="redhood">小紅帽</div>
+  <div class="story-btn" data-story="bear">小熊拔牙</div>
+  <div class="story-btn" data-story="squirrel">松鼠過馬路</div>
+  <div class="story-btn" data-story="wolf">狼來了</div>
+  <div class="story-btn" data-story="race">龜兔賽跑</div>
+  <div class="story-btn" data-story="honey">熊分享蜜糖</div>
+  <div class="story-btn" data-story="crow">烏鴉喝水</div>
+  <div class="story-btn" data-story="dog">貪心的小狗</div>
+</div>
+
+<div id="game" class="game">
+  <h2 id="title"></h2>
+  <div class="top">
+    <div class="top-title">請將圖片拖到下方對應位置（點擊下方圖片可退回更換）</div>
+    <div id="source"></div>
+  </div>
+  <div class="bottom">
+    <div class="bottom-title">正確順序</div>
+    <div class="positions">
+      <div class="slot-wrapper"><div class="number">1</div><div class="slot" data-pos="0"></div></div>
+      <div class="slot-wrapper"><div class="number">2</div><div class="slot" data-pos="1"></div></div>
+      <div class="slot-wrapper"><div class="number">3</div><div class="slot" data-pos="2"></div></div>
+      <div class="slot-wrapper"><div class="number">4</div><div class="slot" data-pos="3"></div></div>
+    </div>
+  </div>
+  <button id="check">確認答案</button>
+  <button id="back">返回目錄</button>
+  <div class="message" id="message"></div>
+</div>
+
+<script>
+// 使用您提供的本地文件路徑
+const sounds = {
+  click:   new Audio("audio/card-sounds-35956.mp3"),
+  drop:    new Audio("audio/card-sounds-35956.mp3"),
+  return:  new Audio("audio/card-sounds-35956.mp3"),
+  success: new Audio("audio/Well Done CCBY3.ogg"),
+  error:   new Audio("audio/total fail.ogg")
+};
+
+function playSound(name) {
+  if (sounds[name]) {
+    sounds[name].currentTime = 0; 
+    sounds[name].play().catch(e => console.log("音訊播放被攔截。"));
+  }
+}
+
+const stories = {
+  pigs:     { name: "三隻小豬",     imgs: ["pigs1.jpg", "pigs2.jpg", "pigs3.jpg", "pigs4.jpg"], correct: [0, 1, 2, 3] },
+  redhood:  { name: "小紅帽",       imgs: ["red1.jpg", "red2.jpg", "red3.jpg", "red4.jpg"], correct: [0, 1, 2, 3] },
+  bear:     { name: "小熊拔牙",     imgs: ["bear1.jpg", "bear2.jpg", "bear3.jpg", "bear4.jpg"], correct: [0, 1, 2, 3] },
+  squirrel: { name: "松鼠過馬路",   imgs: ["squirrel1.jpg", "squirrel2.jpg", "squirrel3.jpg", "squirrel4.jpg"], correct: [0, 1, 2, 3] },
+  wolf:     { name: "狼來了",       imgs: ["wolf1.jpg", "wolf2.jpg", "wolf3.jpg", "wolf4.jpg"], correct: [0, 1, 2, 3] },
+  race:     { name: "龜兔賽跑",     imgs: ["race1.jpg", "race2.jpg", "race3.jpg", "race4.jpg"], correct: [0, 1, 2, 3] },
+  honey:    { name: "熊分享蜜糖",   imgs: ["honey1.jpg", "honey2.jpg", "honey3.jpg", "honey4.jpg"], correct: [0, 1, 2, 3] },
+  crow:     { name: "烏鴉喝水",     imgs: ["crow1.jpg", "crow2.jpg", "crow3.jpg", "crow4.jpg"], correct: [0, 1, 2, 3] },
+  dog:      { name: "貪心的小狗",   imgs: ["dog1.jpg", "dog2.jpg", "dog3.jpg", "dog4.jpg"], correct: [0, 1, 2, 3] }
+};
+
+let currentStory = null;
+
+function startGame(story) {
+  playSound('click');
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('game').style.display = 'block';
+  document.getElementById('title').textContent = story.name;
+  document.getElementById('message').textContent = '';
+  
+  const indices = [0,1,2,3];
+  let shuffled = indices.slice();
+  shuffle(shuffled);
+  
+  const source = document.getElementById('source');
+  source.innerHTML = '';
+  shuffled.forEach(i => {
+    const img = document.createElement('img');
+    img.src = story.imgs[i];
+    img.draggable = true;
+    img.dataset.index = i;
+    source.appendChild(img);
+  });
+  
+  document.querySelectorAll('.slot').forEach(slot => slot.innerHTML = '');
+  setupDragAndDrop();
+  setupClickToReturn(); 
+}
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function setupDragAndDrop() {
+  document.querySelectorAll('#source img').forEach(img => {
+    img.ondragstart = e => e.dataTransfer.setData('index', img.dataset.index);
+  });
+  document.querySelectorAll('.slot').forEach(slot => {
+    slot.ondragover = e => e.preventDefault();
+    slot.ondrop = e => {
+      e.preventDefault();
+      const index = e.dataTransfer.getData('index');
+      const draggedImg = document.querySelector(`#source img[data-index="${index}"]`) ||
+                         document.querySelector(`.slot img[data-index="${index}"]`);
+      if (draggedImg) {
+        playSound('drop');
+        slot.innerHTML = '';
+        const newImg = draggedImg.cloneNode();
+        newImg.draggable = true;
+        newImg.dataset.index = index;
+        slot.appendChild(newImg);
+        if (draggedImg.parentElement.id === 'source') draggedImg.remove();
+      }
+    };
+  });
+}
+
+function setupClickToReturn() {
+  document.querySelectorAll('.slot').forEach(slot => {
+    slot.onclick = function() {
+      const img = this.querySelector('img');
+      if (!img) return;
+      playSound('return');
+      const returnedImg = img.cloneNode();
+      returnedImg.draggable = true;
+      returnedImg.dataset.index = img.dataset.index;
+      returnedImg.ondragstart = ev => ev.dataTransfer.setData('index', returnedImg.dataset.index);
+      document.getElementById('source').appendChild(returnedImg);
+      this.innerHTML = '';
+    };
+  });
+}
+
+document.getElementById('check').onclick = () => {
+  const answer = [];
+  let allFilled = true;
+  document.querySelectorAll('.slot').forEach(slot => {
+    const img = slot.querySelector('img');
+    img ? answer.push(parseInt(img.dataset.index)) : allFilled = false;
+  });
+  if (!allFilled) {
+    playSound('error');
+    showMessage('請把所有圖片都拖到下方位置！', 'wrong');
+    return;
+  }
+  if (JSON.stringify(answer) === JSON.stringify(currentStory.correct)) {
+    playSound('success');
+    showMessage('√ 完全正確！太棒了！', 'correct');
+  } else {
+    playSound('error');
+    showMessage('× 順序不對喔，再試一次吧！', 'wrong');
+    setTimeout(() => startGame(currentStory), 2000);
+  }
+};
+
+function showMessage(text, type) {
+  const msg = document.getElementById('message');
+  msg.textContent = text;
+  msg.className = 'message ' + type;
+}
+
+document.getElementById('back').onclick = () => {
+  playSound('click');
+  document.getElementById('menu').style.display = 'flex';
+  document.getElementById('game').style.display = 'none';
+};
+
+document.querySelectorAll('.story-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentStory = stories[btn.dataset.story];
+    startGame(currentStory);
+  });
+});
+</script>
+</body>
+</html>
