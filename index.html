@@ -15,94 +15,139 @@
     margin: 0; padding: 0; 
     height: 100vh; width: 100vw;
     overflow: hidden;
+    display: flex; flex-direction: column;
   }
 
-  /* 返回按鈕：左上角黑色加粗 */
+  /* 返回按鈕 */
   .back-arrow {
-    position: absolute; top: 10px; left: 10px; width: 40px; height: 40px;
+    position: absolute; top: 12px; left: 12px; width: 40px; height: 40px;
     background: white; border: 3px solid #000; border-radius: 50%;
     display: none; align-items: center; justify-content: center;
     cursor: pointer; z-index: 100; font-size: 24px; color: #000; font-weight: 900;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
 
-  /* 右上方功能按鈕組 */
+  /* 右上功能按鈕 */
   .top-right-controls {
-    position: absolute; top: 10px; right: 10px; 
-    display: none; flex-direction: row; gap: 10px; z-index: 100;
+    position: absolute; top: 12px; right: 12px; 
+    display: none; gap: 8px; z-index: 100;
   }
   .icon-btn {
-    width: 45px; height: 45px; border-radius: 50%; border: none;
+    width: 40px; height: 40px; border-radius: 50%; border: none;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
-    font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s;
+    font-size: 20px; box-shadow: 0 3px 8px rgba(0,0,0,0.15); transition: 0.2s;
   }
-  #check { background: #00bfa5; color: white; } 
-  #retry { background: #ffa000; color: white; } 
   #toggleLayout { background: #546e7a; color: white; }
+  #retry { background: #ffa000; color: white; }
+  #check { background: #00bfa5; color: white; }
+  .icon-btn:active { transform: scale(0.95); }
 
-  /* 遊戲主體 */
+  /* 遊戲主容器 */
   .game-wrapper { 
-    display: none; height: 100vh; width: 100vw; 
+    display: none; 
+    height: 100vh; width: 100vw;
+    /* 預設為上下排列 (1x4 模式適用) */
     flex-direction: column; 
   }
 
-  .game-main { 
-    display: flex; flex: 1; width: 100%; height: 100%;
-    flex-direction: column; /* 預設為上下排列 */
-  }
-
+  /* 面板通用樣式 */
   .panel {
-    flex: 1; display: flex; align-items: center; justify-content: center;
-    padding: 10px; box-sizing: border-box; width: 100%;
+    flex: 1; 
+    display: flex; align-items: center; justify-content: center;
+    padding: 10px; box-sizing: border-box; 
+    position: relative;
+    /* 預設寬高佔滿 (配合 flex-direction: column) */
+    width: 100%; height: 50%;
+    transition: all 0.3s ease;
   }
+  
+  /* 顏色區分 */
+  .panel-source { background: #ffffff; border-bottom: 2px solid #e0f2f1; border-right: none; }
+  .panel-target { background: #e0f2f1; }
 
-  /* 核心修改：強制 1x4 橫向排列，確保格子與圖片大小一致 */
+  /* 網格系統 */
   .grid-layout { 
     display: grid; 
-    grid-template-columns: repeat(4, 1fr); /* 橫向 4 格 */
+    /* 預設 1x4 橫排 */
+    grid-template-columns: repeat(4, 1fr); 
     gap: 12px; 
-    width: 95%; height: 80%; /* 調整高度比例 */
-    max-width: 1200px;
+    width: 95%; max-width: 1000px;
+    justify-content: center; align-content: center;
+    transition: all 0.3s ease;
   }
 
-  /* 圖片與格子：自適應 */
+  /* 圖片與格子 */
   #source img, .slot { 
-    width: 100%; height: 100%;
-    max-height: 40vh;
+    width: 100%; 
+    aspect-ratio: 1 / 1; /* 強制正方形 */
     object-fit: cover; border-radius: 12px; box-sizing: border-box;
+    max-height: 40vh; /* 避免在 1x4 模式太高 */
   }
 
-  #source img { cursor: move; box-shadow: 0 4px 10px rgba(0,0,0,0.1); touch-action: none; }
-  
+  #source img { cursor: grab; box-shadow: 0 4px 10px rgba(0,0,0,0.15); touch-action: none; background: #fff; }
+  #source img:active { cursor: grabbing; transform: scale(1.05); }
+
   .slot { 
     background: #f8fdff; border: 3px dashed #b2ebf2; 
     display: flex; align-items: center; justify-content: center; position: relative;
   }
   .slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; }
 
+  /* 數字標籤 */
   .number { 
-    position: absolute; top: 5px; left: 5px; 
-    background: rgba(255,255,255,0.8); width: 22px; height: 22px;
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    background: white; width: 22px; height: 22px;
     border-radius: 50%; font-size: 14px; font-weight: bold; color: #00838f;
     display: flex; align-items: center; justify-content: center; z-index: 5;
+    border: 2px solid #b2ebf2;
+  }
+
+  /* --- 關鍵：2x2 模式樣式 (左右排列) --- */
+  /* 當容器被標記為 layout-2x2 時應用 */
+  .game-wrapper.layout-mode-2x2 {
+    flex-direction: row; /* 改為左右排列 */
+  }
+  .game-wrapper.layout-mode-2x2 .panel {
+    width: 50%; height: 100%; /* 左右各半 */
+    border-bottom: none; 
+  }
+  .game-wrapper.layout-mode-2x2 .panel-source {
+    border-right: 2px solid #e0f2f1; /* 加右邊界線 */
+  }
+  .game-wrapper.layout-mode-2x2 .grid-layout {
+    grid-template-columns: repeat(2, 1fr); /* 改為 2x2 */
+    width: 90%; 
+    gap: 10px;
+  }
+
+  /* --- 手機直向自動適配 --- */
+  /* 如果是手機直向，預設就當作 2x2 左右排列 */
+  @media (max-width: 768px) and (orientation: portrait) {
+    .game-wrapper { flex-direction: row; } /* 強制左右 */
+    .panel { width: 50%; height: 100%; border-bottom: none; }
+    .panel-source { border-right: 2px solid #e0f2f1; }
+    .grid-layout { 
+      grid-template-columns: repeat(2, 1fr); /* 強制 2x2 */
+      gap: 8px; width: 92%; 
+    }
+    .number { width: 18px; height: 18px; font-size: 12px; top: -8px; }
   }
 
   /* 訊息提示 */
   .message { 
-    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-    font-size: 24px; font-weight: bold; pointer-events: none; z-index: 200;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 40px; font-weight: bold; pointer-events: none; z-index: 200;
+    text-shadow: 0 4px 10px rgba(255,255,255,0.9); width: 100%;
   }
-  .correct { color: #00c853; text-shadow: 0 0 10px white; }
-  .wrong { color: #d50000; text-shadow: 0 0 10px white; }
+  .correct { color: #00c853; }
+  .wrong { color: #d50000; }
 
   /* 目錄頁 */
-  .menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 20px; overflow-y: auto; }
-  .story-btn { width: 150px; background: white; border-radius: 15px; padding: 10px; cursor: pointer; }
-  .story-btn img { width: 100%; height: 100px; object-fit: cover; border-radius: 10px; }
-  .story-btn span { display: block; margin-top: 5px; font-weight: bold; }
-
-  /* 當切換為左右佈局時的樣式 (Row 模式) */
-  .layout-row { flex-direction: row !important; }
-  .layout-row .grid-layout { grid-template-columns: repeat(2, 1fr); } /* 左右模式時變回 2x2 */
+  .menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 40px 20px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
+  .story-btn { width: 140px; background: white; border-radius: 20px; padding: 10px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s; }
+  .story-btn:active { transform: scale(0.95); }
+  .story-btn img { width: 100%; height: 90px; object-fit: cover; border-radius: 12px; }
+  .story-btn span { display: block; margin-top: 8px; font-weight: bold; color: #006064; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -118,25 +163,21 @@
 <div class="menu" id="menu"></div>
 
 <div id="game" class="game-wrapper">
-  <div id="gameMain" class="game-main">
-    <div class="panel">
-      <div id="source" class="grid-layout"></div>
-    </div>
-
-    <div class="panel">
-      <div id="targetGrid" class="grid-layout">
-        <div class="slot"><div class="number">1</div></div>
-        <div class="slot"><div class="number">2</div></div>
-        <div class="slot"><div class="number">3</div></div>
-        <div class="slot"><div class="number">4</div></div>
-      </div>
+  <div class="panel panel-source">
+    <div id="source" class="grid-layout"></div>
+  </div>
+  <div class="panel panel-target">
+    <div id="targetGrid" class="grid-layout">
+      <div class="slot"><div class="number">1</div></div>
+      <div class="slot"><div class="number">2</div></div>
+      <div class="slot"><div class="number">3</div></div>
+      <div class="slot"><div class="number">4</div></div>
     </div>
   </div>
   <div class="message" id="message"></div>
 </div>
 
 <script>
-// 核心邏輯參考自 index.html
 const sounds = {
   click: new Audio("audio/card-sounds-35956.mp3"),
   drop: new Audio("audio/card-sounds-35956.mp3"),
@@ -159,6 +200,7 @@ const stories = {
 let currentStory = null;
 const backBtn = document.getElementById('backBtn');
 const controls = document.getElementById('controls');
+const gameWrapper = document.getElementById('game');
 
 function playSound(name) { if (sounds[name]) { sounds[name].currentTime = 0; sounds[name].play().catch(e => {}); } }
 
@@ -180,17 +222,17 @@ function startGame(story) {
   currentStory = story;
   playSound('click');
   document.getElementById('menu').style.display = 'none';
-  document.getElementById('game').style.display = 'flex';
+  gameWrapper.style.display = 'flex'; // Flex container
   backBtn.style.display = 'flex';
   controls.style.display = 'flex';
   document.getElementById('message').textContent = '';
   
+  // 移除強制 class，讓它根據 Media Query 自動判斷 (或保留上次設定)
+  // 這裡預設重置為自動
+  gameWrapper.classList.remove('layout-mode-2x2'); 
+
   const indices = [1, 2, 3, 4];
-  for (let i = indices.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [indices[i], indices[j]] = [indices[j], indices[i]];
-  }
-  
+  shuffle(indices);
   const source = document.getElementById('source');
   source.innerHTML = '';
   indices.forEach(i => {
@@ -200,13 +242,19 @@ function startGame(story) {
     img.dataset.index = i;
     source.appendChild(img);
   });
-  
   document.querySelectorAll('.slot').forEach(slot => {
     const num = slot.querySelector('.number');
     slot.innerHTML = '';
     slot.appendChild(num);
   });
   setupEvents();
+}
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
 }
 
 function setupEvents() {
@@ -258,10 +306,11 @@ document.getElementById('check').onclick = () => {
 
 document.getElementById('retry').onclick = () => startGame(currentStory);
 
+// 切換佈局按鈕邏輯
 document.getElementById('toggleLayout').onclick = () => {
   playSound('click');
-  const main = document.getElementById('gameMain');
-  main.classList.toggle('layout-row'); // 在「上下排列」與「左右分欄」間切換
+  // 切換 CSS class 來改變 Flex 方向與 Grid 欄數
+  gameWrapper.classList.toggle('layout-mode-2x2');
 };
 
 backBtn.onclick = () => { 
