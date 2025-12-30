@@ -17,22 +17,34 @@
   }
   
   h1 { color: #006064; margin: 10px 0; font-size: 1.8rem; }
-  .subtitle { color: #00838f; margin-bottom: 20px; font-size: 0.9rem; }
-
-  .game-wrapper { display: none; max-width: 1100px; margin: 0 auto; animation: fadeIn 0.5s; }
+  
+  .game-wrapper { display: none; max-width: 1200px; margin: 0 auto; animation: fadeIn 0.5s; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+  /* 核心佈局控制 */
   .game-main { 
     display: flex; 
-    gap: 15px; 
+    gap: 20px; 
     justify-content: center; 
-    align-items: stretch;
-    flex-wrap: wrap; 
+    align-items: flex-start;
+    transition: all 0.3s ease;
   }
 
+  /* --- 模式 1: 左右排列 (2x2) --- */
+  .layout-side-by-side { flex-direction: row; }
+  .layout-side-by-side #source { grid-template-columns: repeat(2, 1fr); } 
+  .layout-side-by-side .positions { grid-template-columns: repeat(2, 1fr); } 
+
+  /* --- 模式 2: 上下排列 (全部打橫 1x4) --- */
+  .layout-stacked { flex-direction: column; align-items: center; }
+  /* 上方素材區改為橫向一排 */
+  .layout-stacked #source { grid-template-columns: repeat(4, 1fr); width: auto; } 
+  /* 下方排序區改為橫向一排 */
+  .layout-stacked .positions { grid-template-columns: repeat(4, 1fr); } 
+  .layout-stacked .panel { width: 95%; max-width: 900px; margin-bottom: 15px; }
+
   .panel {
-    flex: 1; min-width: 320px; 
-    background: white; padding: 15px; border-radius: 20px;
+    background: white; padding: 20px; border-radius: 24px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     display: flex; flex-direction: column; align-items: center;
   }
@@ -40,7 +52,7 @@
   .panel-title { font-size: 18px; color: #006064; margin-bottom: 5px; font-weight: bold; }
   .panel-tip { font-size: 13px; color: #78909c; margin-bottom: 15px; }
   
-  .grid-layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .grid-layout { display: grid; gap: 12px; transition: all 0.3s; }
 
   #source img, .slot img { 
     width: 140px; height: 130px; 
@@ -48,11 +60,10 @@
     -webkit-user-drag: element;
     touch-action: none; 
     user-select: none;
-    -webkit-touch-callout: none;
   }
 
   #source img { cursor: move; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-  .dragging { opacity: 0.5; transform: scale(1.1); }
+  .dragging { opacity: 0.5; transform: scale(1.05); }
 
   .slot-wrapper { position: relative; padding-top: 30px; }
   .slot { 
@@ -63,46 +74,58 @@
   }
   .number { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-size: 20px; font-weight: bold; color: #00838f; }
 
-  /* 按鈕樣式優化 */
-  .game-footer { margin-top: 20px; display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
-  button { padding: 12px 25px; font-size: 16px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+  /* 控制區域 */
+  .top-controls { margin-bottom: 15px; }
+  .game-footer { margin-top: 25px; display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
   
+  button { padding: 10px 22px; font-size: 16px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+  #toggleLayout { background: #546e7a; color: white; }
   #check { background: #00bfa5; color: white; }
-  #retry { background: #ffb300; color: white; } /* 再玩一次按鈕：橘黃色 */
+  #retry { background: #ffa000; color: white; }
   #back { background: #b0bec5; color: white; }
   
-  button:active { transform: scale(0.95); }
+  button:hover { filter: brightness(1.1); }
+  .message { font-size: 22px; font-weight: bold; margin: 15px; min-height: 30px; }
 
-  .message { font-size: 20px; font-weight: bold; margin: 15px; min-height: 30px; }
-  .correct { color: #00c853; }
-  .wrong { color: #d50000; }
-
+  /* 目錄頁 */
   .menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 20px auto; }
   .story-btn {
-    width: 140px; background: white; border-radius: 15px; 
-    padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer;
+    width: 150px; background: white; border-radius: 15px; padding: 10px; cursor: pointer;
   }
-  .story-btn img { width: 100%; height: 90px; object-fit: cover; border-radius: 10px; }
-  .story-btn span { font-size: 14px; font-weight: bold; display: block; margin-top: 5px; }
+  .story-btn img { width: 100%; height: 100px; object-fit: cover; border-radius: 10px; }
+
+  /* 手機螢幕極窄時的縮小處理 */
+  @media (max-width: 650px) {
+    #source img, .slot { width: 85px; height: 80px; }
+    .number { font-size: 16px; }
+    .layout-stacked .panel { padding: 10px; }
+  }
 </style>
 </head>
 <body>
 
 <h1>童話故事排序</h1>
-<p class="subtitle">📱 手機用戶直接按住圖片拖拽，放錯可直接用新圖覆蓋</p>
 
 <div class="menu" id="menu"></div>
 
 <div id="game" class="game-wrapper">
-  <h2 id="story-name" style="color:#006064; font-size: 1.4rem;"></h2>
-  <div class="game-main">
+  <div class="top-controls">
+    <button id="toggleLayout">🔄 切換佈局 (目前: 左右 2x2)</button>
+  </div>
+  
+  <h2 id="story-name" style="color:#006064; margin-bottom: 15px;"></h2>
+  
+  <div id="gameMain" class="game-main layout-side-by-side">
     <div class="panel">
       <div class="panel-title">🖼️ 故事碎片</div>
+      <div class="panel-tip" id="sourceTip">從左側拖曳圖片</div>
       <div id="source" class="grid-layout"></div>
     </div>
+
     <div class="panel">
       <div class="panel-title">🎯 排序位置</div>
-      <div class="grid-layout">
+      <div class="panel-tip">按正確順序放入</div>
+      <div class="grid-layout positions">
         <div class="slot-wrapper"><div class="number">1</div><div class="slot"></div></div>
         <div class="slot-wrapper"><div class="number">2</div><div class="slot"></div></div>
         <div class="slot-wrapper"><div class="number">3</div><div class="slot"></div></div>
@@ -110,6 +133,7 @@
       </div>
     </div>
   </div>
+
   <div class="message" id="message"></div>
   <div class="game-footer">
     <button id="check">檢查答案</button>
@@ -119,22 +143,19 @@
 </div>
 
 <script>
+// 音效與故事數據
 const sounds = {
-  click:   new Audio("audio/card-sounds-35956.mp3"),
-  drop:    new Audio("audio/card-sounds-35956.mp3"),
-  return:  new Audio("audio/card-sounds-35956.mp3"),
+  click: new Audio("audio/card-sounds-35956.mp3"),
+  drop: new Audio("audio/card-sounds-35956.mp3"),
+  return: new Audio("audio/card-sounds-35956.mp3"),
   success: new Audio("audio/Well Done CCBY3.ogg"),
-  error:   new Audio("audio/total fail.ogg")
+  error: new Audio("audio/total fail.ogg")
 };
-
-function playSound(name) {
-  if (sounds[name]) { sounds[name].currentTime = 0; sounds[name].play().catch(e => {}); }
-}
 
 const stories = {
   pigs: { name: "三隻小豬", imgs: ["pigs0.jpg","pigs1.jpg","pigs2.jpg","pigs3.jpg","pigs4.jpg"], correct: [1,2,3,4] },
   redhood: { name: "小紅帽", imgs: ["red0.jpg","red1.jpg","red2.jpg","red3.jpg","red4.jpg"], correct: [1,2,3,4] },
-  bear: { name: "小熊拔牙", imgs: ["bear0.jpg","bear1.jpg","bear2.jpg","bear3.jpg","bear4.jpg"], correct: [1,2,3,4] },
+  bear: { name: "小熊拔牙", imgs: ["bear0.jpg","bear2.jpg","bear3.jpg","bear4.jpg"], correct: [1,2,3,4] },
   squirrel: { name: "松鼠過馬路", imgs: ["squirrel0.jpg","squirrel1.jpg","squirrel2.jpg","squirrel3.jpg","squirrel4.jpg"], correct: [1,2,3,4] },
   wolf: { name: "狼來了", imgs: ["wolf0.jpg","wolf1.jpg","wolf2.jpg","wolf3.jpg","wolf4.jpg"], correct: [1,2,3,4] },
   race: { name: "龜兔賽跑", imgs: ["race0.jpg","race1.jpg","race2.jpg","race3.jpg","race4.jpg"], correct: [1,2,3,4] },
@@ -144,6 +165,27 @@ const stories = {
 };
 
 let currentStory = null;
+
+const gameMain = document.getElementById('gameMain');
+const toggleBtn = document.getElementById('toggleLayout');
+const sourceTip = document.getElementById('sourceTip');
+
+toggleBtn.onclick = () => {
+  if (gameMain.classList.contains('layout-side-by-side')) {
+    gameMain.classList.replace('layout-side-by-side', 'layout-stacked');
+    toggleBtn.textContent = "🔄 切換佈局 (目前: 上下打橫)";
+    sourceTip.textContent = "從上方拖曳圖片到下方";
+  } else {
+    gameMain.classList.replace('layout-stacked', 'layout-side-by-side');
+    toggleBtn.textContent = "🔄 切換佈局 (目前: 左右 2x2)";
+    sourceTip.textContent = "從左側拖曳圖片到右側";
+  }
+  playSound('click');
+};
+
+function playSound(name) {
+  if (sounds[name]) { sounds[name].currentTime = 0; sounds[name].play().catch(e => {}); }
+}
 
 function renderMenu() {
   const menu = document.getElementById('menu');
@@ -206,7 +248,6 @@ function setupEvents() {
       if (draggedImg) {
         playSound('drop');
         const existingImg = slot.querySelector('img');
-        // 彈回邏輯
         if (existingImg && existingImg.dataset.index !== newIndex) {
             existingImg.draggable = true;
             existingImg.ondragstart = ev => ev.dataTransfer.setData('index', existingImg.dataset.index);
@@ -235,7 +276,6 @@ function setupEvents() {
   });
 }
 
-// 檢查答案按鈕
 document.getElementById('check').onclick = () => {
   const answer = [];
   let allFilled = true;
@@ -251,12 +291,8 @@ document.getElementById('check').onclick = () => {
   }
 };
 
-// 「再玩一次」按鈕邏輯：重置當前關卡
-document.getElementById('retry').onclick = () => {
-  if (currentStory) startGame(currentStory);
-};
+document.getElementById('retry').onclick = () => { if (currentStory) startGame(currentStory); };
 
-// 返回按鈕
 document.getElementById('back').onclick = () => {
   playSound('click');
   document.getElementById('menu').style.display = 'flex';
@@ -266,7 +302,7 @@ document.getElementById('back').onclick = () => {
 function showMessage(text, type) {
   const msg = document.getElementById('message');
   msg.textContent = text;
-  msg.className = 'message ' + type;
+  msg.className = 'message ' + (type === 'correct' ? 'correct' : 'wrong');
 }
 
 renderMenu();
