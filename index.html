@@ -2,134 +2,127 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>經典童話故事排序遊戲</title>
+
+<script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
+
 <style>
-  /* 基礎頁面樣式 */
   body { 
     font-family: "Microsoft JhengHei", "微軟正黑體", Arial, sans-serif; 
     text-align: center; 
     background: linear-gradient(to bottom, #e9f6f8, #ffffff); 
-    margin: 0; padding: 20px; 
-    min-height: 100vh;
+    margin: 0; padding: 10px; min-height: 100vh;
+    /* 防止手機拖拽時頁面晃動 */
+    overflow-x: hidden;
   }
-  h1 { color: #006064; margin-bottom: 10px; font-size: 2.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
-  .subtitle { color: #00838f; margin-bottom: 40px; font-size: 1.2rem; }
+  
+  h1 { color: #006064; margin: 10px 0; font-size: 1.8rem; }
+  .subtitle { color: #00838f; margin-bottom: 20px; font-size: 0.9rem; }
 
-  /* 目錄頁面佈局 */
-  .menu { 
-    display: flex; 
-    flex-wrap: wrap; 
-    justify-content: center; 
-    gap: 25px; 
-    max-width: 1100px;
-    margin: 40px auto; 
-  }
-
-  /* 故事按鈕美化 */
-  .story-btn {
-    width: 200px; 
-    height: 240px; 
-    background: white; 
-    border-radius: 24px; 
-    box-shadow: 0 10px 20px rgba(0,0,0,0.06);
-    cursor: pointer; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 2px solid transparent;
-    padding: 15px;
-    overflow: hidden;
-  }
-
-  .story-btn:hover { 
-    transform: translateY(-12px) scale(1.03); 
-    box-shadow: 0 15px 35px rgba(0,131,143,0.2); 
-    border-color: #80deea;
-    background: #fdfdfd;
-  }
-
-  /* 目錄圖片樣式 */
-  .story-btn img {
-    width: 170px;
-    height: 130px;
-    object-fit: cover; 
-    border-radius: 16px;
-    margin-bottom: 15px;
-    pointer-events: none;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
-
-  .story-btn span {
-    font-size: 20px;
-    font-weight: bold;
-    color: #004d40;
-  }
-
-  /* 遊戲介面 */
-  .game { display: none; max-width: 1100px; margin: 30px auto; animation: fadeIn 0.5s; }
+  /* 遊戲主容器 */
+  .game-wrapper { display: none; max-width: 1100px; margin: 0 auto; animation: fadeIn 0.5s; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  .top, .bottom { 
-    background: white; 
-    padding: 30px; 
-    border-radius: 24px; 
-    box-shadow: 0 8px 30px rgba(0,0,0,0.05); 
-    margin-bottom: 40px; 
+  .game-main { 
+    display: flex; 
+    gap: 15px; 
+    justify-content: center; 
+    align-items: stretch;
+    flex-wrap: wrap; /* 手機寬度不足時自動換行 */
   }
 
-  .top-title, .bottom-title { font-size: 22px; color: #006064; margin-bottom: 20px; font-weight: bold; }
-  
-  #source { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; min-height: 180px; }
-  .top img { width: 180px; height: 180px; object-fit: cover; border-radius: 16px; cursor: move; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s; }
-  .top img:hover { transform: scale(1.05); }
+  .panel {
+    flex: 1; min-width: 320px; /* 確保在手機上不會太窄 */
+    background: white; padding: 15px; border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    display: flex; flex-direction: column; align-items: center;
+  }
 
-  /* 排序槽位樣式 */
-  .positions { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-  .slot-wrapper { position: relative; padding-top: 40px; }
-  .slot { width: 190px; height: 190px; background: #f0fbff; border: 3px dashed #b2ebf2; border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 17px; }
-  .number { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-size: 24px; font-weight: bold; color: #00838f; }
+  .panel-title { font-size: 18px; color: #006064; margin-bottom: 5px; font-weight: bold; }
+  .panel-tip { font-size: 13px; color: #78909c; margin-bottom: 15px; }
+  
+  .grid-layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+  /* 圖片樣式優化 */
+  #source img, .slot img { 
+    width: 140px; height: 130px; 
+    object-fit: cover; border-radius: 12px; 
+    /* 核心：防止手機長按彈出菜單，並優化觸控性能 */
+    -webkit-user-drag: element;
+    touch-action: none; 
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  #source img { cursor: move; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+  
+  /* 被拖拽時的視覺回饋 */
+  .dragging { opacity: 0.5; transform: scale(1.1); }
+
+  .slot-wrapper { position: relative; padding-top: 30px; }
+  .slot { 
+    width: 140px; height: 130px; background: #f0fbff; 
+    border: 2px dashed #b2ebf2; border-radius: 12px; 
+    display: flex; align-items: center; justify-content: center; 
+    overflow: hidden;
+  }
+  .number { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-size: 20px; font-weight: bold; color: #00838f; }
 
   /* 按鈕與訊息 */
-  button { margin: 20px 10px; padding: 15px 45px; font-size: 20px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+  .game-footer { margin-top: 20px; }
+  button { margin: 5px; padding: 12px 30px; font-size: 16px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
   #check { background: #00bfa5; color: white; }
   #back { background: #b0bec5; color: white; }
-  .message { font-size: 26px; font-weight: bold; margin: 20px; min-height: 40px; }
-  .correct { color: #00c853; }
-  .wrong { color: #d50000; }
+  .message { font-size: 20px; font-weight: bold; margin: 15px; min-height: 30px; }
+
+  /* 目錄頁面 */
+  .menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 20px auto; }
+  .story-btn {
+    width: 140px; background: white; border-radius: 15px; 
+    padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer;
+  }
+  .story-btn img { width: 100%; height: 90px; object-fit: cover; border-radius: 10px; }
+  .story-btn span { font-size: 14px; font-weight: bold; display: block; margin-top: 5px; }
+
+  /* 針對極小螢幕優化 */
+  @media (max-width: 360px) {
+    #source img, .slot { width: 120px; height: 110px; }
+    .panel { min-width: 100%; }
+  }
 </style>
 </head>
 <body>
 
-<h1>經典童話故事排序遊戲</h1>
-<p class="subtitle">請選擇一個故事，把圖片按正確順序拖到下方吧！</p>
+<h1>童話故事排序</h1>
+<p class="subtitle">📱 手機用戶請直接按住圖片拖拽</p>
 
 <div class="menu" id="menu"></div>
 
-<div id="game" class="game">
-  <h2 id="title" style="color:#006064; font-size: 2rem;"></h2>
-  <div class="top">
-    <div class="top-title">💡 請將圖片拖到下方對應位置（點擊下方圖片可退回）</div>
-    <div id="source"></div>
-  </div>
-  <div class="bottom">
-    <div class="bottom-title">🧩 正確順序</div>
-    <div class="positions">
-      <div class="slot-wrapper"><div class="number">1</div><div class="slot" data-pos="0"></div></div>
-      <div class="slot-wrapper"><div class="number">2</div><div class="slot" data-pos="1"></div></div>
-      <div class="slot-wrapper"><div class="number">3</div><div class="slot" data-pos="2"></div></div>
-      <div class="slot-wrapper"><div class="number">4</div><div class="slot" data-pos="3"></div></div>
+<div id="game" class="game-wrapper">
+  <h2 id="story-name" style="color:#006064; font-size: 1.4rem;"></h2>
+  <div class="game-main">
+    <div class="panel">
+      <div class="panel-title">🖼️ 故事碎片</div>
+      <div class="panel-tip">按住圖片拖過去</div>
+      <div id="source" class="grid-layout"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">🎯 排序位置</div>
+      <div class="panel-tip">點擊圖片可收回</div>
+      <div class="grid-layout">
+        <div class="slot-wrapper"><div class="number">1</div><div class="slot"></div></div>
+        <div class="slot-wrapper"><div class="number">2</div><div class="slot"></div></div>
+        <div class="slot-wrapper"><div class="number">3</div><div class="slot"></div></div>
+        <div class="slot-wrapper"><div class="number">4</div><div class="slot"></div></div>
+      </div>
     </div>
   </div>
   <div class="message" id="message"></div>
-  <button id="check">確認答案</button>
-  <button id="back">返回目錄</button>
+  <div class="game-footer"><button id="check">檢查答案</button><button id="back">返回清單</button></div>
 </div>
 
 <script>
-// 音效路徑
 const sounds = {
   click:   new Audio("audio/card-sounds-35956.mp3"),
   drop:    new Audio("audio/card-sounds-35956.mp3"),
@@ -139,28 +132,23 @@ const sounds = {
 };
 
 function playSound(name) {
-  if (sounds[name]) {
-    sounds[name].currentTime = 0; 
-    sounds[name].play().catch(e => console.log("音訊播放受阻"));
-  }
+  if (sounds[name]) { sounds[name].currentTime = 0; sounds[name].play().catch(e => {}); }
 }
 
-// 故事數據：imgs[0] 是封面，imgs[1-4] 是故事圖
 const stories = {
-  pigs:     { name: "三隻小豬",     imgs: ["pigs0.jpg","pigs1.jpg","pigs2.jpg", "pigs3.jpg", "pigs4.jpg"], correct: [1, 2, 3, 4] },
-  redhood:  { name: "小紅帽",       imgs: ["red0.jpg","red1.jpg", "red2.jpg", "red3.jpg", "red4.jpg"], correct: [1, 2, 3, 4] },
-  bear:     { name: "小熊拔牙",     imgs: ["bear0.jpg", "bear1.jpg","bear2.jpg", "bear3.jpg", "bear4.jpg"], correct: [1, 2, 3, 4] },
-  squirrel: { name: "松鼠過馬路",   imgs: ["squirrel0.jpg", "squirrel1.jpg","squirrel2.jpg", "squirrel3.jpg", "squirrel4.jpg"], correct: [1, 2, 3, 4] },
-  wolf:     { name: "狼來了",       imgs: ["wolf0.jpg", "wolf1.jpg", "wolf2.jpg", "wolf3.jpg", "wolf4.jpg"], correct: [1, 2, 3, 4] },
-  race:     { name: "龜兔賽跑",     imgs: ["race0.jpg", "race1.jpg", "race2.jpg", "race3.jpg", "race4.jpg"], correct: [1, 2, 3, 4] },
-  honey:    { name: "熊分享蜜糖",   imgs: ["honey0.jpg", "honey1.jpg", "honey2.jpg", "honey3.jpg", "honey4.jpg"], correct: [1, 2, 3, 4] },
-  crow:     { name: "烏鴉喝水",     imgs: ["crow0.jpg", "crow1.jpg", "crow2.jpg", "crow3.jpg", "crow4.jpg"], correct: [1, 2, 3, 4] },
-  dog:      { name: "貪心的小狗",   imgs: ["dog0.jpg", "dog1.jpg", "dog2.jpg", "dog3.jpg", "dog4.jpg"], correct: [1, 2, 3, 4] }
+  pigs: { name: "三隻小豬", imgs: ["pigs0.jpg","pigs1.jpg","pigs2.jpg","pigs3.jpg","pigs4.jpg"], correct: [1,2,3,4] },
+  redhood: { name: "小紅帽", imgs: ["red0.jpg","red1.jpg","red2.jpg","red3.jpg","red4.jpg"], correct: [1,2,3,4] },
+  bear: { name: "小熊拔牙", imgs: ["bear0.jpg","bear1.jpg","bear2.jpg","bear3.jpg","bear4.jpg"], correct: [1,2,3,4] },
+  squirrel: { name: "松鼠過馬路", imgs: ["squirrel0.jpg","squirrel1.jpg","squirrel2.jpg","squirrel3.jpg","squirrel4.jpg"], correct: [1,2,3,4] },
+  wolf: { name: "狼來了", imgs: ["wolf0.jpg","wolf1.jpg","wolf2.jpg","wolf3.jpg","wolf4.jpg"], correct: [1,2,3,4] },
+  race: { name: "龜兔賽跑", imgs: ["race0.jpg","race1.jpg","race2.jpg","race3.jpg","race4.jpg"], correct: [1,2,3,4] },
+  honey: { name: "熊分享蜜糖", imgs: ["honey0.jpg","honey1.jpg","honey2.jpg","honey3.jpg","honey4.jpg"], correct: [1,2,3,4] },
+  crow: { name: "烏鴉喝水", imgs: ["crow0.jpg","crow1.jpg","crow2.jpg","crow3.jpg","crow4.jpg"], correct: [1,2,3,4] },
+  dog: { name: "貪心的小狗", imgs: ["dog0.jpg","dog1.jpg","dog2.jpg","dog3.jpg","dog4.jpg"], correct: [1,2,3,4] }
 };
 
 let currentStory = null;
 
-// 初始化目錄
 function renderMenu() {
   const menu = document.getElementById('menu');
   menu.innerHTML = '';
@@ -169,25 +157,21 @@ function renderMenu() {
     const btn = document.createElement('div');
     btn.className = 'story-btn';
     btn.innerHTML = `<img src="${story.imgs[0]}"><span>${story.name}</span>`;
-    btn.onclick = () => {
-      currentStory = story;
-      startGame(story);
-    };
+    btn.onclick = () => startGame(story);
     menu.appendChild(btn);
   }
 }
 
 function startGame(story) {
+  currentStory = story;
   playSound('click');
   document.getElementById('menu').style.display = 'none';
   document.getElementById('game').style.display = 'block';
-  document.getElementById('title').textContent = story.name;
+  document.getElementById('story-name').textContent = story.name;
   document.getElementById('message').textContent = '';
   
-  // 重要：索引改為 [1, 2, 3, 4]，跳過 0 (封面圖)
   const indices = [1, 2, 3, 4];
   shuffle(indices);
-  
   const source = document.getElementById('source');
   source.innerHTML = '';
   indices.forEach(i => {
@@ -195,12 +179,13 @@ function startGame(story) {
     img.src = story.imgs[i];
     img.draggable = true;
     img.dataset.index = i;
+    // 手機視覺回饋
+    img.addEventListener('dragstart', function() { this.classList.add('dragging'); });
+    img.addEventListener('dragend', function() { this.classList.remove('dragging'); });
     source.appendChild(img);
   });
-  
   document.querySelectorAll('.slot').forEach(slot => slot.innerHTML = '');
-  setupDragAndDrop();
-  setupClickToReturn(); 
+  setupEvents();
 }
 
 function shuffle(array) {
@@ -210,33 +195,36 @@ function shuffle(array) {
   }
 }
 
-// 拖放邏輯
-function setupDragAndDrop() {
+function setupEvents() {
   document.querySelectorAll('#source img').forEach(img => {
     img.ondragstart = e => e.dataTransfer.setData('index', img.dataset.index);
   });
+
   document.querySelectorAll('.slot').forEach(slot => {
     slot.ondragover = e => e.preventDefault();
     slot.ondrop = e => {
       e.preventDefault();
-      const index = e.dataTransfer.getData('index');
-      const draggedImg = document.querySelector(`#source img[data-index="${index}"]`) ||
-                         document.querySelector(`.slot img[data-index="${index}"]`);
+      const newIndex = e.dataTransfer.getData('index');
+      const draggedImg = document.querySelector(`#source img[data-index="${newIndex}"]`) ||
+                         document.querySelector(`.slot img[data-index="${newIndex}"]`);
+      
       if (draggedImg) {
         playSound('drop');
+        const existingImg = slot.querySelector('img');
+        if (existingImg && existingImg.dataset.index !== newIndex) {
+            existingImg.draggable = true;
+            existingImg.ondragstart = ev => ev.dataTransfer.setData('index', existingImg.dataset.index);
+            document.getElementById('source').appendChild(existingImg);
+        }
         slot.innerHTML = '';
         const newImg = draggedImg.cloneNode();
+        newImg.dataset.index = newIndex;
         newImg.draggable = true;
-        newImg.dataset.index = index;
         slot.appendChild(newImg);
         if (draggedImg.parentElement.id === 'source') draggedImg.remove();
       }
     };
-  });
-}
 
-function setupClickToReturn() {
-  document.querySelectorAll('.slot').forEach(slot => {
     slot.onclick = function() {
       const img = this.querySelector('img');
       if (!img) return;
@@ -251,7 +239,6 @@ function setupClickToReturn() {
   });
 }
 
-// 檢查答案
 document.getElementById('check').onclick = () => {
   const answer = [];
   let allFilled = true;
@@ -259,20 +246,11 @@ document.getElementById('check').onclick = () => {
     const img = slot.querySelector('img');
     img ? answer.push(parseInt(img.dataset.index)) : allFilled = false;
   });
-
-  if (!allFilled) {
-    playSound('error');
-    showMessage('⚠️ 請把所有圖片都拖到下方位置！', 'wrong');
-    return;
-  }
-
-  // 與故事設定的 correct [1, 2, 3, 4] 進行比對
+  if (!allFilled) { playSound('error'); showMessage('⚠️ 還有空格沒填完喔！', 'wrong'); return; }
   if (JSON.stringify(answer) === JSON.stringify(currentStory.correct)) {
-    playSound('success');
-    showMessage('🌟 太棒了！順序完全正確！', 'correct');
+    playSound('success'); showMessage('🌟 棒極了！順序正確！', 'correct');
   } else {
-    playSound('error');
-    showMessage('❌ 順序不對喔，再試一次吧！', 'wrong');
+    playSound('error'); showMessage('❌ 順序不對，再試一次！', 'wrong');
   }
 };
 
