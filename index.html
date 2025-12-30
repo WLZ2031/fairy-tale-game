@@ -9,157 +9,134 @@
 
 <style>
   body { 
-    font-family: "Microsoft JhengHei", "微軟正黑體", Arial, sans-serif; 
+    font-family: "Microsoft JhengHei", Arial, sans-serif; 
     text-align: center; 
-    background: linear-gradient(to bottom, #e9f6f8, #ffffff); 
-    margin: 0; padding: 10px; min-height: 100vh;
-    overflow-x: hidden;
+    background: #f0f9fa; 
+    margin: 0; padding: 0; 
+    height: 100vh; width: 100vw;
+    overflow: hidden;
   }
-  
-  h1 { color: #006064; margin: 5px 0; font-size: 1.6rem; }
 
-  /* --- 修改重點：返回按鈕樣式 --- */
+  /* 返回按鈕：左上角黑色加粗 */
   .back-arrow {
-    position: fixed; 
-    top: 15px; 
-    left: 15px; 
-    width: 42px; 
-    height: 42px;
-    background: white; 
-    border-radius: 50%; 
-    display: none; 
-    align-items: center; 
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15); 
-    cursor: pointer; 
-    z-index: 100;
-    transition: all 0.3s ease; 
-    /* 改為黑色與加粗 */
-    border: 2px solid #000000; 
-    font-size: 24px; 
-    color: #000000; 
-    font-weight: 900; 
-    line-height: 1;
+    position: absolute; top: 10px; left: 10px; width: 40px; height: 40px;
+    background: white; border: 3px solid #000; border-radius: 50%;
+    display: none; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 100; font-size: 24px; color: #000; font-weight: 900;
   }
-  .back-arrow:hover { transform: scale(1.1); background: #f0f0f0; }
 
-  .game-wrapper { display: none; max-width: 1000px; margin: 0 auto; animation: fadeIn 0.4s; position: relative; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  /* 右上方功能按鈕組 */
+  .top-right-controls {
+    position: absolute; top: 10px; right: 10px; 
+    display: none; flex-direction: row; gap: 10px; z-index: 100;
+  }
+  .icon-btn {
+    width: 45px; height: 45px; border-radius: 50%; border: none;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s;
+  }
+  #check { background: #00bfa5; color: white; } 
+  #retry { background: #ffa000; color: white; } 
+  #toggleLayout { background: #546e7a; color: white; }
+
+  /* 遊戲主體 */
+  .game-wrapper { 
+    display: none; height: 100vh; width: 100vw; 
+    flex-direction: column; 
+  }
 
   .game-main { 
-    display: flex; gap: 15px; justify-content: center; 
-    align-items: stretch;
+    display: flex; flex: 1; width: 100%; height: 100%;
+    flex-direction: column; /* 預設為上下排列 */
   }
-
-  .layout-side-by-side { flex-direction: row; }
-  .layout-stacked { flex-direction: column; align-items: center; gap: 10px; }
 
   .panel {
-    flex: 1;
-    background: white; padding: 10px; border-radius: 18px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    display: flex; flex-direction: column; align-items: center;
-    justify-content: flex-start;
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 10px; box-sizing: border-box; width: 100%;
   }
 
-  .panel-title { font-size: 16px; color: #006064; margin: 0 0 2px 0; font-weight: bold; }
-  .panel-tip { font-size: 11px; color: #78909c; margin: 0 0 8px 0; }
-  
+  /* 核心修改：強制 1x4 橫向排列，確保格子與圖片大小一致 */
   .grid-layout { 
     display: grid; 
-    grid-template-columns: repeat(2, 1fr); 
+    grid-template-columns: repeat(4, 1fr); /* 橫向 4 格 */
     gap: 12px; 
+    width: 95%; height: 80%; /* 調整高度比例 */
+    max-width: 1200px;
   }
-  .layout-stacked .grid-layout { grid-template-columns: repeat(4, 1fr); }
 
+  /* 圖片與格子：自適應 */
   #source img, .slot { 
-    width: 140px; height: 130px; 
-    border-radius: 10px;
-    box-sizing: border-box;
+    width: 100%; height: 100%;
+    max-height: 40vh;
+    object-fit: cover; border-radius: 12px; box-sizing: border-box;
   }
 
-  #source img { 
-    object-fit: cover; cursor: move; 
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1); 
-    touch-action: none; 
-  }
+  #source img { cursor: move; box-shadow: 0 4px 10px rgba(0,0,0,0.1); touch-action: none; }
   
   .slot { 
-    background: #f8fdff; border: 2px dashed #b2ebf2; 
-    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    background: #f8fdff; border: 3px dashed #b2ebf2; 
+    display: flex; align-items: center; justify-content: center; position: relative;
   }
-  .slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+  .slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; }
 
-  .slot-wrapper { position: relative; padding-top: 25px; }
-  .number { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-size: 18px; font-weight: bold; color: #00838f; }
-
-  .top-controls { margin-bottom: 8px; }
-  .game-footer { margin-top: 12px; display: flex; justify-content: center; gap: 10px; }
-  button.action-btn { padding: 8px 25px; font-size: 16px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
-  #toggleLayout { background: #546e7a; color: white; padding: 5px 12px; font-size: 12px; }
-  #check { background: #00bfa5; color: white; }
-  #retry { background: #ffa000; color: white; }
-
-  .message { font-size: 18px; font-weight: bold; margin: 8px; min-height: 22px; }
-  .correct { color: #00c853; }
-  .wrong { color: #d50000; }
-
-  .menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 15px auto; }
-  .story-btn { width: 145px; background: white; border-radius: 15px; padding: 10px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-  .story-btn img { width: 100%; height: 95px; object-fit: cover; border-radius: 10px; }
-  .story-btn span { display: block; margin-top: 5px; font-weight: bold; color: #006064; font-size: 13px; }
-
-  @media (max-width: 650px) {
-    #source img, .slot { width: 85px; height: 80px; }
-    .grid-layout { gap: 8px; }
-    .panel { min-width: 180px; padding: 8px; }
-    .slot-wrapper { padding-top: 20px; }
+  .number { 
+    position: absolute; top: 5px; left: 5px; 
+    background: rgba(255,255,255,0.8); width: 22px; height: 22px;
+    border-radius: 50%; font-size: 14px; font-weight: bold; color: #00838f;
+    display: flex; align-items: center; justify-content: center; z-index: 5;
   }
+
+  /* 訊息提示 */
+  .message { 
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    font-size: 24px; font-weight: bold; pointer-events: none; z-index: 200;
+  }
+  .correct { color: #00c853; text-shadow: 0 0 10px white; }
+  .wrong { color: #d50000; text-shadow: 0 0 10px white; }
+
+  /* 目錄頁 */
+  .menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 20px; overflow-y: auto; }
+  .story-btn { width: 150px; background: white; border-radius: 15px; padding: 10px; cursor: pointer; }
+  .story-btn img { width: 100%; height: 100px; object-fit: cover; border-radius: 10px; }
+  .story-btn span { display: block; margin-top: 5px; font-weight: bold; }
+
+  /* 當切換為左右佈局時的樣式 (Row 模式) */
+  .layout-row { flex-direction: row !important; }
+  .layout-row .grid-layout { grid-template-columns: repeat(2, 1fr); } /* 左右模式時變回 2x2 */
 </style>
 </head>
 <body>
 
 <button class="back-arrow" id="backBtn">←</button>
 
-<h1>童話故事排序</h1>
+<div class="top-right-controls" id="controls">
+  <button id="toggleLayout" class="icon-btn" title="切換佈局">🔄</button>
+  <button id="retry" class="icon-btn" title="再玩一次">🕒</button>
+  <button id="check" class="icon-btn" title="檢查答案">✅</button>
+</div>
 
 <div class="menu" id="menu"></div>
 
 <div id="game" class="game-wrapper">
-  <div class="top-controls">
-    <button id="toggleLayout" class="action-btn">🔄 切換佈局</button>
-  </div>
-  
-  <h2 id="story-name" style="color:#006064; margin-bottom: 8px; font-size: 1.4rem;"></h2>
-  
-  <div id="gameMain" class="game-main layout-side-by-side">
+  <div id="gameMain" class="game-main">
     <div class="panel">
-      <div class="panel-title">🖼️ 故事碎片</div>
-      <div class="panel-tip" id="sourceTip">拖曳圖片到右側</div>
       <div id="source" class="grid-layout"></div>
     </div>
 
     <div class="panel">
-      <div class="panel-title">🎯 排序位置</div>
-      <div class="panel-tip">按正確順序放入</div>
-      <div class="grid-layout positions">
-        <div class="slot-wrapper"><div class="number">1</div><div class="slot"></div></div>
-        <div class="slot-wrapper"><div class="number">2</div><div class="slot"></div></div>
-        <div class="slot-wrapper"><div class="number">3</div><div class="slot"></div></div>
-        <div class="slot-wrapper"><div class="number">4</div><div class="slot"></div></div>
+      <div id="targetGrid" class="grid-layout">
+        <div class="slot"><div class="number">1</div></div>
+        <div class="slot"><div class="number">2</div></div>
+        <div class="slot"><div class="number">3</div></div>
+        <div class="slot"><div class="number">4</div></div>
       </div>
     </div>
   </div>
-
   <div class="message" id="message"></div>
-  <div class="game-footer">
-    <button id="check" class="action-btn">檢查答案</button>
-    <button id="retry" class="action-btn">再玩一次</button>
-  </div>
 </div>
 
 <script>
-// (JS 部分保持不變)
+// 核心邏輯參考自 index.html
 const sounds = {
   click: new Audio("audio/card-sounds-35956.mp3"),
   drop: new Audio("audio/card-sounds-35956.mp3"),
@@ -181,7 +158,7 @@ const stories = {
 
 let currentStory = null;
 const backBtn = document.getElementById('backBtn');
-const gameMain = document.getElementById('gameMain');
+const controls = document.getElementById('controls');
 
 function playSound(name) { if (sounds[name]) { sounds[name].currentTime = 0; sounds[name].play().catch(e => {}); } }
 
@@ -189,12 +166,12 @@ function renderMenu() {
   const menu = document.getElementById('menu');
   menu.innerHTML = '';
   backBtn.style.display = 'none';
+  controls.style.display = 'none';
   for (let key in stories) {
-    const story = stories[key];
     const btn = document.createElement('div');
     btn.className = 'story-btn';
-    btn.innerHTML = `<img src="${story.imgs[0]}"><span>${story.name}</span>`;
-    btn.onclick = () => startGame(story);
+    btn.innerHTML = `<img src="${stories[key].imgs[0]}"><span>${stories[key].name}</span>`;
+    btn.onclick = () => startGame(stories[key]);
     menu.appendChild(btn);
   }
 }
@@ -203,13 +180,17 @@ function startGame(story) {
   currentStory = story;
   playSound('click');
   document.getElementById('menu').style.display = 'none';
-  document.getElementById('game').style.display = 'block';
+  document.getElementById('game').style.display = 'flex';
   backBtn.style.display = 'flex';
-  document.getElementById('story-name').textContent = story.name;
+  controls.style.display = 'flex';
   document.getElementById('message').textContent = '';
   
   const indices = [1, 2, 3, 4];
-  shuffle(indices);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  
   const source = document.getElementById('source');
   source.innerHTML = '';
   indices.forEach(i => {
@@ -219,35 +200,14 @@ function startGame(story) {
     img.dataset.index = i;
     source.appendChild(img);
   });
-  document.querySelectorAll('.slot').forEach(slot => slot.innerHTML = '');
+  
+  document.querySelectorAll('.slot').forEach(slot => {
+    const num = slot.querySelector('.number');
+    slot.innerHTML = '';
+    slot.appendChild(num);
+  });
   setupEvents();
 }
-
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
-
-document.getElementById('toggleLayout').onclick = () => {
-  const sourceTip = document.getElementById('sourceTip');
-  if (gameMain.classList.contains('layout-side-by-side')) {
-    gameMain.classList.replace('layout-side-by-side', 'layout-stacked');
-    sourceTip.textContent = "從上方拖曳圖片到下方";
-  } else {
-    gameMain.classList.replace('layout-stacked', 'layout-side-by-side');
-    sourceTip.textContent = "從左側拖曳圖片到右側";
-  }
-  playSound('click');
-};
-
-backBtn.onclick = () => {
-  playSound('click');
-  document.getElementById('menu').style.display = 'flex';
-  document.getElementById('game').style.display = 'none';
-  backBtn.style.display = 'none';
-};
 
 function setupEvents() {
   document.querySelectorAll('#source img').forEach(img => {
@@ -263,7 +223,6 @@ function setupEvents() {
         playSound('drop');
         const existing = slot.querySelector('img');
         if (existing) document.getElementById('source').appendChild(existing);
-        slot.innerHTML = '';
         const newImg = draggedImg.cloneNode();
         newImg.dataset.index = idx;
         slot.appendChild(newImg);
@@ -277,9 +236,8 @@ function setupEvents() {
         playSound('click');
         const returned = img.cloneNode();
         returned.dataset.index = img.dataset.index;
-        returned.draggable = true;
         document.getElementById('source').appendChild(returned);
-        this.innerHTML = '';
+        img.remove();
         setupEvents();
       }
     };
@@ -289,15 +247,28 @@ function setupEvents() {
 document.getElementById('check').onclick = () => {
   const ans = Array.from(document.querySelectorAll('.slot img')).map(img => parseInt(img.dataset.index));
   const msg = document.getElementById('message');
-  if (ans.length < 4) { playSound('error'); msg.textContent = '⚠️ 尚未填完！'; msg.className='message wrong'; return; }
+  if (ans.length < 4) { playSound('error'); msg.textContent = '⚠️ 未完成'; msg.className='message wrong'; return; }
   if (JSON.stringify(ans) === JSON.stringify(currentStory.correct)) {
-    playSound('success'); msg.textContent = '🌟 完全正確！'; msg.className='message correct';
+    playSound('success'); msg.textContent = '🌟 正確！'; msg.className='message correct';
   } else {
-    playSound('error'); msg.textContent = '❌ 再試一次！'; msg.className='message wrong';
+    playSound('error'); msg.textContent = '❌ 錯誤！'; msg.className='message wrong';
   }
+  setTimeout(() => msg.textContent = '', 2000);
 };
 
 document.getElementById('retry').onclick = () => startGame(currentStory);
+
+document.getElementById('toggleLayout').onclick = () => {
+  playSound('click');
+  const main = document.getElementById('gameMain');
+  main.classList.toggle('layout-row'); // 在「上下排列」與「左右分欄」間切換
+};
+
+backBtn.onclick = () => { 
+  document.getElementById('game').style.display = 'none'; 
+  document.getElementById('menu').style.display = 'flex'; 
+  renderMenu();
+};
 
 renderMenu();
 </script>
