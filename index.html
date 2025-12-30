@@ -20,22 +20,22 @@
 
   /* 返回按鈕 */
   .back-arrow {
-    position: absolute; top: 12px; left: 12px; width: 40px; height: 40px;
+    position: absolute; top: 10px; left: 10px; width: 36px; height: 36px;
     background: white; border: 3px solid #000; border-radius: 50%;
     display: none; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 100; font-size: 24px; color: #000; font-weight: 900;
+    cursor: pointer; z-index: 100; font-size: 20px; color: #000; font-weight: 900;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
 
   /* 右上功能按鈕 */
   .top-right-controls {
-    position: absolute; top: 12px; right: 12px; 
-    display: none; gap: 8px; z-index: 100;
+    position: absolute; top: 10px; right: 10px; 
+    display: none; gap: 6px; z-index: 100;
   }
   .icon-btn {
-    width: 40px; height: 40px; border-radius: 50%; border: none;
+    width: 36px; height: 36px; border-radius: 50%; border: none;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
-    font-size: 20px; box-shadow: 0 3px 8px rgba(0,0,0,0.15); transition: 0.2s;
+    font-size: 18px; box-shadow: 0 3px 8px rgba(0,0,0,0.15); transition: 0.2s;
   }
   #toggleLayout { background: #546e7a; color: white; }
   #retry { background: #ffa000; color: white; }
@@ -46,7 +46,6 @@
   .game-wrapper { 
     display: none; 
     height: 100vh; width: 100vw;
-    /* 預設為上下排列 (1x4 模式適用) */
     flex-direction: column; 
   }
 
@@ -56,19 +55,17 @@
     display: flex; align-items: center; justify-content: center;
     padding: 10px; box-sizing: border-box; 
     position: relative;
-    /* 預設寬高佔滿 (配合 flex-direction: column) */
     width: 100%; height: 50%;
     transition: all 0.3s ease;
   }
   
-  /* 顏色區分 */
   .panel-source { background: #ffffff; border-bottom: 2px solid #e0f2f1; border-right: none; }
   .panel-target { background: #e0f2f1; }
 
   /* 網格系統 */
   .grid-layout { 
     display: grid; 
-    /* 預設 1x4 橫排 */
+    /* 預設 PC/iPad: 1x4 橫排 */
     grid-template-columns: repeat(4, 1fr); 
     gap: 12px; 
     width: 95%; max-width: 1000px;
@@ -102,35 +99,55 @@
     border: 2px solid #b2ebf2;
   }
 
-  /* --- 關鍵：2x2 模式樣式 (左右排列) --- */
-  /* 當容器被標記為 layout-2x2 時應用 */
+  /* --- 2x2 模式樣式 (左右排列) --- */
   .game-wrapper.layout-mode-2x2 {
-    flex-direction: row; /* 改為左右排列 */
+    flex-direction: row; 
   }
   .game-wrapper.layout-mode-2x2 .panel {
-    width: 50%; height: 100%; /* 左右各半 */
+    width: 50%; height: 100%; 
     border-bottom: none; 
+    padding: 5px; /* 減少內距，讓圖片更大 */
   }
   .game-wrapper.layout-mode-2x2 .panel-source {
-    border-right: 2px solid #e0f2f1; /* 加右邊界線 */
+    border-right: 2px solid #e0f2f1; 
   }
   .game-wrapper.layout-mode-2x2 .grid-layout {
-    grid-template-columns: repeat(2, 1fr); /* 改為 2x2 */
-    width: 90%; 
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr); 
+    width: 96%; /* 幾乎佔滿寬度 */
+    gap: 8px; /* 減少間距 */
+  }
+  
+  /* 針對 2x2 模式放寬高度限制 */
+  .game-wrapper.layout-mode-2x2 #source img, 
+  .game-wrapper.layout-mode-2x2 .slot {
+     max-height: none; /* 取消高度限制，讓它根據寬度自適應 */
   }
 
-  /* --- 手機直向自動適配 --- */
-  /* 如果是手機直向，預設就當作 2x2 左右排列 */
+  /* --- 手機直向自動適配 (強制切換為大圖模式) --- */
   @media (max-width: 768px) and (orientation: portrait) {
-    .game-wrapper { flex-direction: row; } /* 強制左右 */
-    .panel { width: 50%; height: 100%; border-bottom: none; }
-    .panel-source { border-right: 2px solid #e0f2f1; }
-    .grid-layout { 
-      grid-template-columns: repeat(2, 1fr); /* 強制 2x2 */
-      gap: 8px; width: 92%; 
+    .game-wrapper { flex-direction: row; } 
+    
+    .panel { 
+        width: 50%; height: 100%; 
+        border-bottom: none; 
+        padding: 4px; /* 極限壓縮 padding */
     }
-    .number { width: 18px; height: 18px; font-size: 12px; top: -8px; }
+    .panel-source { border-right: 1px solid #e0f2f1; }
+    
+    .grid-layout { 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 6px; /* 手機上間距更小 */
+      width: 98%; /* 寬度撐滿 */
+    }
+    
+    /* 圖片樣式微調 */
+    #source img, .slot {
+        border-radius: 8px; /*稍微減小圓角 */
+        max-height: none; /* 讓圖片可以長大 */
+    }
+
+    /* 數字標籤微調 */
+    .number { width: 18px; height: 18px; font-size: 11px; top: -8px; border-width: 1px; }
   }
 
   /* 訊息提示 */
@@ -178,6 +195,7 @@
 </div>
 
 <script>
+// (JS 代碼保持不變，核心邏輯相同)
 const sounds = {
   click: new Audio("audio/card-sounds-35956.mp3"),
   drop: new Audio("audio/card-sounds-35956.mp3"),
@@ -222,13 +240,11 @@ function startGame(story) {
   currentStory = story;
   playSound('click');
   document.getElementById('menu').style.display = 'none';
-  gameWrapper.style.display = 'flex'; // Flex container
+  gameWrapper.style.display = 'flex'; 
   backBtn.style.display = 'flex';
   controls.style.display = 'flex';
   document.getElementById('message').textContent = '';
   
-  // 移除強制 class，讓它根據 Media Query 自動判斷 (或保留上次設定)
-  // 這裡預設重置為自動
   gameWrapper.classList.remove('layout-mode-2x2'); 
 
   const indices = [1, 2, 3, 4];
@@ -306,10 +322,8 @@ document.getElementById('check').onclick = () => {
 
 document.getElementById('retry').onclick = () => startGame(currentStory);
 
-// 切換佈局按鈕邏輯
 document.getElementById('toggleLayout').onclick = () => {
   playSound('click');
-  // 切換 CSS class 來改變 Flex 方向與 Grid 欄數
   gameWrapper.classList.toggle('layout-mode-2x2');
 };
 
