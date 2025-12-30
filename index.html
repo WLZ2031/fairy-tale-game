@@ -16,93 +16,110 @@
     overflow-x: hidden;
   }
   
-  h1 { color: #006064; margin: 10px 0; font-size: 1.8rem; }
-  
-  .game-wrapper { display: none; max-width: 1200px; margin: 0 auto; animation: fadeIn 0.5s; }
+  h1 { color: #006064; margin: 5px 0; font-size: 1.6rem; }
+
+  /* --- 修改重點：返回按鈕樣式 --- */
+  .back-arrow {
+    position: fixed; 
+    top: 15px; 
+    left: 15px; 
+    width: 42px; 
+    height: 42px;
+    background: white; 
+    border-radius: 50%; 
+    display: none; 
+    align-items: center; 
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15); 
+    cursor: pointer; 
+    z-index: 100;
+    transition: all 0.3s ease; 
+    /* 改為黑色與加粗 */
+    border: 2px solid #000000; 
+    font-size: 24px; 
+    color: #000000; 
+    font-weight: 900; 
+    line-height: 1;
+  }
+  .back-arrow:hover { transform: scale(1.1); background: #f0f0f0; }
+
+  .game-wrapper { display: none; max-width: 1000px; margin: 0 auto; animation: fadeIn 0.4s; position: relative; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  /* 核心佈局控制 */
   .game-main { 
-    display: flex; 
-    gap: 20px; 
-    justify-content: center; 
-    align-items: flex-start;
-    transition: all 0.3s ease;
+    display: flex; gap: 15px; justify-content: center; 
+    align-items: stretch;
   }
 
-  /* --- 模式 1: 左右排列 (2x2) --- */
   .layout-side-by-side { flex-direction: row; }
-  .layout-side-by-side #source { grid-template-columns: repeat(2, 1fr); } 
-  .layout-side-by-side .positions { grid-template-columns: repeat(2, 1fr); } 
-
-  /* --- 模式 2: 上下排列 (全部打橫 1x4) --- */
-  .layout-stacked { flex-direction: column; align-items: center; }
-  /* 上方素材區改為橫向一排 */
-  .layout-stacked #source { grid-template-columns: repeat(4, 1fr); width: auto; } 
-  /* 下方排序區改為橫向一排 */
-  .layout-stacked .positions { grid-template-columns: repeat(4, 1fr); } 
-  .layout-stacked .panel { width: 95%; max-width: 900px; margin-bottom: 15px; }
+  .layout-stacked { flex-direction: column; align-items: center; gap: 10px; }
 
   .panel {
-    background: white; padding: 20px; border-radius: 24px;
+    flex: 1;
+    background: white; padding: 10px; border-radius: 18px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     display: flex; flex-direction: column; align-items: center;
+    justify-content: flex-start;
   }
 
-  .panel-title { font-size: 18px; color: #006064; margin-bottom: 5px; font-weight: bold; }
-  .panel-tip { font-size: 13px; color: #78909c; margin-bottom: 15px; }
+  .panel-title { font-size: 16px; color: #006064; margin: 0 0 2px 0; font-weight: bold; }
+  .panel-tip { font-size: 11px; color: #78909c; margin: 0 0 8px 0; }
   
-  .grid-layout { display: grid; gap: 12px; transition: all 0.3s; }
+  .grid-layout { 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 12px; 
+  }
+  .layout-stacked .grid-layout { grid-template-columns: repeat(4, 1fr); }
 
-  #source img, .slot img { 
+  #source img, .slot { 
     width: 140px; height: 130px; 
-    object-fit: cover; border-radius: 12px; 
-    -webkit-user-drag: element;
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+
+  #source img { 
+    object-fit: cover; cursor: move; 
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1); 
     touch-action: none; 
-    user-select: none;
   }
-
-  #source img { cursor: move; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-  .dragging { opacity: 0.5; transform: scale(1.05); }
-
-  .slot-wrapper { position: relative; padding-top: 30px; }
-  .slot { 
-    width: 140px; height: 130px; background: #f0fbff; 
-    border: 2px dashed #b2ebf2; border-radius: 12px; 
-    display: flex; align-items: center; justify-content: center; 
-    overflow: hidden;
-  }
-  .number { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-size: 20px; font-weight: bold; color: #00838f; }
-
-  /* 控制區域 */
-  .top-controls { margin-bottom: 15px; }
-  .game-footer { margin-top: 25px; display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
   
-  button { padding: 10px 22px; font-size: 16px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-  #toggleLayout { background: #546e7a; color: white; }
+  .slot { 
+    background: #f8fdff; border: 2px dashed #b2ebf2; 
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+
+  .slot-wrapper { position: relative; padding-top: 25px; }
+  .number { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-size: 18px; font-weight: bold; color: #00838f; }
+
+  .top-controls { margin-bottom: 8px; }
+  .game-footer { margin-top: 12px; display: flex; justify-content: center; gap: 10px; }
+  button.action-btn { padding: 8px 25px; font-size: 16px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
+  #toggleLayout { background: #546e7a; color: white; padding: 5px 12px; font-size: 12px; }
   #check { background: #00bfa5; color: white; }
   #retry { background: #ffa000; color: white; }
-  #back { background: #b0bec5; color: white; }
-  
-  button:hover { filter: brightness(1.1); }
-  .message { font-size: 22px; font-weight: bold; margin: 15px; min-height: 30px; }
 
-  /* 目錄頁 */
-  .menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 20px auto; }
-  .story-btn {
-    width: 150px; background: white; border-radius: 15px; padding: 10px; cursor: pointer;
-  }
-  .story-btn img { width: 100%; height: 100px; object-fit: cover; border-radius: 10px; }
+  .message { font-size: 18px; font-weight: bold; margin: 8px; min-height: 22px; }
+  .correct { color: #00c853; }
+  .wrong { color: #d50000; }
 
-  /* 手機螢幕極窄時的縮小處理 */
+  .menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 15px auto; }
+  .story-btn { width: 145px; background: white; border-radius: 15px; padding: 10px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+  .story-btn img { width: 100%; height: 95px; object-fit: cover; border-radius: 10px; }
+  .story-btn span { display: block; margin-top: 5px; font-weight: bold; color: #006064; font-size: 13px; }
+
   @media (max-width: 650px) {
     #source img, .slot { width: 85px; height: 80px; }
-    .number { font-size: 16px; }
-    .layout-stacked .panel { padding: 10px; }
+    .grid-layout { gap: 8px; }
+    .panel { min-width: 180px; padding: 8px; }
+    .slot-wrapper { padding-top: 20px; }
   }
 </style>
 </head>
 <body>
+
+<button class="back-arrow" id="backBtn">←</button>
 
 <h1>童話故事排序</h1>
 
@@ -110,15 +127,15 @@
 
 <div id="game" class="game-wrapper">
   <div class="top-controls">
-    <button id="toggleLayout">🔄 切換佈局 (目前: 左右 2x2)</button>
+    <button id="toggleLayout" class="action-btn">🔄 切換佈局</button>
   </div>
   
-  <h2 id="story-name" style="color:#006064; margin-bottom: 15px;"></h2>
+  <h2 id="story-name" style="color:#006064; margin-bottom: 8px; font-size: 1.4rem;"></h2>
   
   <div id="gameMain" class="game-main layout-side-by-side">
     <div class="panel">
       <div class="panel-title">🖼️ 故事碎片</div>
-      <div class="panel-tip" id="sourceTip">從左側拖曳圖片</div>
+      <div class="panel-tip" id="sourceTip">拖曳圖片到右側</div>
       <div id="source" class="grid-layout"></div>
     </div>
 
@@ -136,18 +153,16 @@
 
   <div class="message" id="message"></div>
   <div class="game-footer">
-    <button id="check">檢查答案</button>
-    <button id="retry">再玩一次</button>
-    <button id="back">返回清單</button>
+    <button id="check" class="action-btn">檢查答案</button>
+    <button id="retry" class="action-btn">再玩一次</button>
   </div>
 </div>
 
 <script>
-// 音效與故事數據
+// (JS 部分保持不變)
 const sounds = {
   click: new Audio("audio/card-sounds-35956.mp3"),
   drop: new Audio("audio/card-sounds-35956.mp3"),
-  return: new Audio("audio/card-sounds-35956.mp3"),
   success: new Audio("audio/Well Done CCBY3.ogg"),
   error: new Audio("audio/total fail.ogg")
 };
@@ -155,7 +170,7 @@ const sounds = {
 const stories = {
   pigs: { name: "三隻小豬", imgs: ["pigs0.jpg","pigs1.jpg","pigs2.jpg","pigs3.jpg","pigs4.jpg"], correct: [1,2,3,4] },
   redhood: { name: "小紅帽", imgs: ["red0.jpg","red1.jpg","red2.jpg","red3.jpg","red4.jpg"], correct: [1,2,3,4] },
-  bear: { name: "小熊拔牙", imgs: ["bear0.jpg","bear2.jpg","bear3.jpg","bear4.jpg"], correct: [1,2,3,4] },
+  bear: { name: "小熊拔牙", imgs: ["bear0.jpg","bear1.jpg","bear2.jpg","bear3.jpg","bear4.jpg"], correct: [1,2,3,4] },
   squirrel: { name: "松鼠過馬路", imgs: ["squirrel0.jpg","squirrel1.jpg","squirrel2.jpg","squirrel3.jpg","squirrel4.jpg"], correct: [1,2,3,4] },
   wolf: { name: "狼來了", imgs: ["wolf0.jpg","wolf1.jpg","wolf2.jpg","wolf3.jpg","wolf4.jpg"], correct: [1,2,3,4] },
   race: { name: "龜兔賽跑", imgs: ["race0.jpg","race1.jpg","race2.jpg","race3.jpg","race4.jpg"], correct: [1,2,3,4] },
@@ -165,31 +180,15 @@ const stories = {
 };
 
 let currentStory = null;
-
+const backBtn = document.getElementById('backBtn');
 const gameMain = document.getElementById('gameMain');
-const toggleBtn = document.getElementById('toggleLayout');
-const sourceTip = document.getElementById('sourceTip');
 
-toggleBtn.onclick = () => {
-  if (gameMain.classList.contains('layout-side-by-side')) {
-    gameMain.classList.replace('layout-side-by-side', 'layout-stacked');
-    toggleBtn.textContent = "🔄 切換佈局 (目前: 上下打橫)";
-    sourceTip.textContent = "從上方拖曳圖片到下方";
-  } else {
-    gameMain.classList.replace('layout-stacked', 'layout-side-by-side');
-    toggleBtn.textContent = "🔄 切換佈局 (目前: 左右 2x2)";
-    sourceTip.textContent = "從左側拖曳圖片到右側";
-  }
-  playSound('click');
-};
-
-function playSound(name) {
-  if (sounds[name]) { sounds[name].currentTime = 0; sounds[name].play().catch(e => {}); }
-}
+function playSound(name) { if (sounds[name]) { sounds[name].currentTime = 0; sounds[name].play().catch(e => {}); } }
 
 function renderMenu() {
   const menu = document.getElementById('menu');
   menu.innerHTML = '';
+  backBtn.style.display = 'none';
   for (let key in stories) {
     const story = stories[key];
     const btn = document.createElement('div');
@@ -205,6 +204,7 @@ function startGame(story) {
   playSound('click');
   document.getElementById('menu').style.display = 'none';
   document.getElementById('game').style.display = 'block';
+  backBtn.style.display = 'flex';
   document.getElementById('story-name').textContent = story.name;
   document.getElementById('message').textContent = '';
   
@@ -217,8 +217,6 @@ function startGame(story) {
     img.src = story.imgs[i];
     img.draggable = true;
     img.dataset.index = i;
-    img.addEventListener('dragstart', function() { this.classList.add('dragging'); });
-    img.addEventListener('dragend', function() { this.classList.remove('dragging'); });
     source.appendChild(img);
   });
   document.querySelectorAll('.slot').forEach(slot => slot.innerHTML = '');
@@ -232,78 +230,74 @@ function shuffle(array) {
   }
 }
 
+document.getElementById('toggleLayout').onclick = () => {
+  const sourceTip = document.getElementById('sourceTip');
+  if (gameMain.classList.contains('layout-side-by-side')) {
+    gameMain.classList.replace('layout-side-by-side', 'layout-stacked');
+    sourceTip.textContent = "從上方拖曳圖片到下方";
+  } else {
+    gameMain.classList.replace('layout-stacked', 'layout-side-by-side');
+    sourceTip.textContent = "從左側拖曳圖片到右側";
+  }
+  playSound('click');
+};
+
+backBtn.onclick = () => {
+  playSound('click');
+  document.getElementById('menu').style.display = 'flex';
+  document.getElementById('game').style.display = 'none';
+  backBtn.style.display = 'none';
+};
+
 function setupEvents() {
   document.querySelectorAll('#source img').forEach(img => {
     img.ondragstart = e => e.dataTransfer.setData('index', img.dataset.index);
   });
-
   document.querySelectorAll('.slot').forEach(slot => {
     slot.ondragover = e => e.preventDefault();
     slot.ondrop = e => {
       e.preventDefault();
-      const newIndex = e.dataTransfer.getData('index');
-      const draggedImg = document.querySelector(`#source img[data-index="${newIndex}"]`) ||
-                         document.querySelector(`.slot img[data-index="${newIndex}"]`);
-      
+      const idx = e.dataTransfer.getData('index');
+      const draggedImg = document.querySelector(`#source img[data-index="${idx}"]`) || document.querySelector(`.slot img[data-index="${idx}"]`);
       if (draggedImg) {
         playSound('drop');
-        const existingImg = slot.querySelector('img');
-        if (existingImg && existingImg.dataset.index !== newIndex) {
-            existingImg.draggable = true;
-            existingImg.ondragstart = ev => ev.dataTransfer.setData('index', existingImg.dataset.index);
-            document.getElementById('source').appendChild(existingImg);
-        }
+        const existing = slot.querySelector('img');
+        if (existing) document.getElementById('source').appendChild(existing);
         slot.innerHTML = '';
         const newImg = draggedImg.cloneNode();
-        newImg.dataset.index = newIndex;
-        newImg.draggable = true;
+        newImg.dataset.index = idx;
         slot.appendChild(newImg);
         if (draggedImg.parentElement.id === 'source') draggedImg.remove();
+        setupEvents();
       }
     };
-
     slot.onclick = function() {
       const img = this.querySelector('img');
-      if (!img) return;
-      playSound('return');
-      const returnedImg = img.cloneNode();
-      returnedImg.draggable = true;
-      returnedImg.dataset.index = img.dataset.index;
-      returnedImg.ondragstart = ev => ev.dataTransfer.setData('index', returnedImg.dataset.index);
-      document.getElementById('source').appendChild(returnedImg);
-      this.innerHTML = '';
+      if (img) {
+        playSound('click');
+        const returned = img.cloneNode();
+        returned.dataset.index = img.dataset.index;
+        returned.draggable = true;
+        document.getElementById('source').appendChild(returned);
+        this.innerHTML = '';
+        setupEvents();
+      }
     };
   });
 }
 
 document.getElementById('check').onclick = () => {
-  const answer = [];
-  let allFilled = true;
-  document.querySelectorAll('.slot').forEach(slot => {
-    const img = slot.querySelector('img');
-    img ? answer.push(parseInt(img.dataset.index)) : allFilled = false;
-  });
-  if (!allFilled) { playSound('error'); showMessage('⚠️ 還有空格沒填完喔！', 'wrong'); return; }
-  if (JSON.stringify(answer) === JSON.stringify(currentStory.correct)) {
-    playSound('success'); showMessage('🌟 棒極了！順序正確！', 'correct');
+  const ans = Array.from(document.querySelectorAll('.slot img')).map(img => parseInt(img.dataset.index));
+  const msg = document.getElementById('message');
+  if (ans.length < 4) { playSound('error'); msg.textContent = '⚠️ 尚未填完！'; msg.className='message wrong'; return; }
+  if (JSON.stringify(ans) === JSON.stringify(currentStory.correct)) {
+    playSound('success'); msg.textContent = '🌟 完全正確！'; msg.className='message correct';
   } else {
-    playSound('error'); showMessage('❌ 順序不對，再試一次！', 'wrong');
+    playSound('error'); msg.textContent = '❌ 再試一次！'; msg.className='message wrong';
   }
 };
 
-document.getElementById('retry').onclick = () => { if (currentStory) startGame(currentStory); };
-
-document.getElementById('back').onclick = () => {
-  playSound('click');
-  document.getElementById('menu').style.display = 'flex';
-  document.getElementById('game').style.display = 'none';
-};
-
-function showMessage(text, type) {
-  const msg = document.getElementById('message');
-  msg.textContent = text;
-  msg.className = 'message ' + (type === 'correct' ? 'correct' : 'wrong');
-}
+document.getElementById('retry').onclick = () => startGame(currentStory);
 
 renderMenu();
 </script>
