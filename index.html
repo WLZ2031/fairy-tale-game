@@ -13,14 +13,12 @@
     text-align: center; 
     background: linear-gradient(to bottom, #e9f6f8, #ffffff); 
     margin: 0; padding: 10px; min-height: 100vh;
-    /* 防止手機拖拽時頁面晃動 */
     overflow-x: hidden;
   }
   
   h1 { color: #006064; margin: 10px 0; font-size: 1.8rem; }
   .subtitle { color: #00838f; margin-bottom: 20px; font-size: 0.9rem; }
 
-  /* 遊戲主容器 */
   .game-wrapper { display: none; max-width: 1100px; margin: 0 auto; animation: fadeIn 0.5s; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -29,11 +27,11 @@
     gap: 15px; 
     justify-content: center; 
     align-items: stretch;
-    flex-wrap: wrap; /* 手機寬度不足時自動換行 */
+    flex-wrap: wrap; 
   }
 
   .panel {
-    flex: 1; min-width: 320px; /* 確保在手機上不會太窄 */
+    flex: 1; min-width: 320px; 
     background: white; padding: 15px; border-radius: 20px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     display: flex; flex-direction: column; align-items: center;
@@ -44,11 +42,9 @@
   
   .grid-layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 
-  /* 圖片樣式優化 */
   #source img, .slot img { 
     width: 140px; height: 130px; 
     object-fit: cover; border-radius: 12px; 
-    /* 核心：防止手機長按彈出菜單，並優化觸控性能 */
     -webkit-user-drag: element;
     touch-action: none; 
     user-select: none;
@@ -56,8 +52,6 @@
   }
 
   #source img { cursor: move; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-  
-  /* 被拖拽時的視覺回饋 */
   .dragging { opacity: 0.5; transform: scale(1.1); }
 
   .slot-wrapper { position: relative; padding-top: 30px; }
@@ -69,14 +63,20 @@
   }
   .number { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-size: 20px; font-weight: bold; color: #00838f; }
 
-  /* 按鈕與訊息 */
-  .game-footer { margin-top: 20px; }
-  button { margin: 5px; padding: 12px 30px; font-size: 16px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
+  /* 按鈕樣式優化 */
+  .game-footer { margin-top: 20px; display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+  button { padding: 12px 25px; font-size: 16px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+  
   #check { background: #00bfa5; color: white; }
+  #retry { background: #ffb300; color: white; } /* 再玩一次按鈕：橘黃色 */
   #back { background: #b0bec5; color: white; }
-  .message { font-size: 20px; font-weight: bold; margin: 15px; min-height: 30px; }
+  
+  button:active { transform: scale(0.95); }
 
-  /* 目錄頁面 */
+  .message { font-size: 20px; font-weight: bold; margin: 15px; min-height: 30px; }
+  .correct { color: #00c853; }
+  .wrong { color: #d50000; }
+
   .menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 20px auto; }
   .story-btn {
     width: 140px; background: white; border-radius: 15px; 
@@ -84,18 +84,12 @@
   }
   .story-btn img { width: 100%; height: 90px; object-fit: cover; border-radius: 10px; }
   .story-btn span { font-size: 14px; font-weight: bold; display: block; margin-top: 5px; }
-
-  /* 針對極小螢幕優化 */
-  @media (max-width: 360px) {
-    #source img, .slot { width: 120px; height: 110px; }
-    .panel { min-width: 100%; }
-  }
 </style>
 </head>
 <body>
 
 <h1>童話故事排序</h1>
-<p class="subtitle">📱 手機用戶請直接按住圖片拖拽</p>
+<p class="subtitle">📱 手機用戶直接按住圖片拖拽，放錯可直接用新圖覆蓋</p>
 
 <div class="menu" id="menu"></div>
 
@@ -104,12 +98,10 @@
   <div class="game-main">
     <div class="panel">
       <div class="panel-title">🖼️ 故事碎片</div>
-      <div class="panel-tip">按住圖片拖過去</div>
       <div id="source" class="grid-layout"></div>
     </div>
     <div class="panel">
       <div class="panel-title">🎯 排序位置</div>
-      <div class="panel-tip">點擊圖片可收回</div>
       <div class="grid-layout">
         <div class="slot-wrapper"><div class="number">1</div><div class="slot"></div></div>
         <div class="slot-wrapper"><div class="number">2</div><div class="slot"></div></div>
@@ -119,7 +111,11 @@
     </div>
   </div>
   <div class="message" id="message"></div>
-  <div class="game-footer"><button id="check">檢查答案</button><button id="back">返回清單</button></div>
+  <div class="game-footer">
+    <button id="check">檢查答案</button>
+    <button id="retry">再玩一次</button>
+    <button id="back">返回清單</button>
+  </div>
 </div>
 
 <script>
@@ -179,7 +175,6 @@ function startGame(story) {
     img.src = story.imgs[i];
     img.draggable = true;
     img.dataset.index = i;
-    // 手機視覺回饋
     img.addEventListener('dragstart', function() { this.classList.add('dragging'); });
     img.addEventListener('dragend', function() { this.classList.remove('dragging'); });
     source.appendChild(img);
@@ -211,6 +206,7 @@ function setupEvents() {
       if (draggedImg) {
         playSound('drop');
         const existingImg = slot.querySelector('img');
+        // 彈回邏輯
         if (existingImg && existingImg.dataset.index !== newIndex) {
             existingImg.draggable = true;
             existingImg.ondragstart = ev => ev.dataTransfer.setData('index', existingImg.dataset.index);
@@ -239,6 +235,7 @@ function setupEvents() {
   });
 }
 
+// 檢查答案按鈕
 document.getElementById('check').onclick = () => {
   const answer = [];
   let allFilled = true;
@@ -254,17 +251,23 @@ document.getElementById('check').onclick = () => {
   }
 };
 
-function showMessage(text, type) {
-  const msg = document.getElementById('message');
-  msg.textContent = text;
-  msg.className = 'message ' + type;
-}
+// 「再玩一次」按鈕邏輯：重置當前關卡
+document.getElementById('retry').onclick = () => {
+  if (currentStory) startGame(currentStory);
+};
 
+// 返回按鈕
 document.getElementById('back').onclick = () => {
   playSound('click');
   document.getElementById('menu').style.display = 'flex';
   document.getElementById('game').style.display = 'none';
 };
+
+function showMessage(text, type) {
+  const msg = document.getElementById('message');
+  msg.textContent = text;
+  msg.className = 'message ' + type;
+}
 
 renderMenu();
 </script>
