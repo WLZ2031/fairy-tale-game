@@ -59,8 +59,12 @@
     border-bottom: 2px solid #b2ebf2;
     display: flex;
     justify-content: center; 
-    align-items: center; 
-    padding: 10px;
+    
+    /* 核心修改：改為靠下對齊，讓格子貼近分割線 */
+    align-items: flex-end; 
+    
+    /* 這裡只留一點點底部邊距 (減少紅框區域) */
+    padding: 0 10px 10px 10px; 
     box-sizing: border-box;
   }
   
@@ -74,8 +78,13 @@
     border-top: none;
     display: flex;
     justify-content: center; 
+    
+    /* 核心修改：靠上對齊，讓圖片往上提 */
     align-items: flex-start; 
-    padding: 15px 10px 20px 10px; 
+    
+    /* 大幅減少上方 Padding，讓圖片貼近分割線 */
+    padding: 10px 10px 20px 10px; 
+    
     box-sizing: border-box;
     overflow: hidden;
   }
@@ -108,7 +117,7 @@
     touch-action: none; 
     background: #fff; 
     
-    /* 核心限制：確保不溢出 */
+    /* 維持高度限制，確保不溢出 */
     max-height: 32vh; 
     max-width: 32vh; 
     
@@ -208,7 +217,7 @@
 <div class="menu" id="menu"></div>
 
 <div id="game" class="game-wrapper">
-  <!-- 來源區 (擴大 Drop 區域至整個 Panel) -->
+  <!-- 來源區 -->
   <div class="panel panel-source" id="sourcePanelArea">
     <div id="source" class="grid-layout"></div>
   </div>
@@ -325,7 +334,6 @@ function shuffle(array) {
 }
 
 function setupDropZones() {
-  // 1. 格子區 (Target) 的 Drop 邏輯
   document.querySelectorAll('.slot').forEach(slot => {
     slot.ondragover = e => {
       e.preventDefault(); 
@@ -356,7 +364,6 @@ function setupDropZones() {
     };
   });
 
-  // 2. 來源區 (Source) 的 Drop 邏輯 - 核心修改：改為監聽整個 Panel
   const sourcePanelArea = document.getElementById('sourcePanelArea');
   const sourceGrid = document.getElementById('source');
 
@@ -369,8 +376,6 @@ function setupDropZones() {
     e.preventDefault();
     if (!draggedItem) return;
     
-    // 只要圖片不是已經在 source 裡，就放回去
-    // 這裡我們直接把圖片塞回 #source 網格容器，而不是外層的 panel
     if (draggedItem.parentElement !== sourceGrid) {
       playSound('drop');
       sourceGrid.appendChild(draggedItem);
