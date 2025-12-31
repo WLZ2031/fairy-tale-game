@@ -60,11 +60,11 @@
     display: flex;
     justify-content: center; 
     
-    /* 核心修改：改為靠下對齊，讓格子貼近分割線 */
+    /* 靠下對齊 */
     align-items: flex-end; 
     
-    /* 這裡只留一點點底部邊距 (減少紅框區域) */
-    padding: 0 10px 10px 10px; 
+    /* 核心修改：增加底部 padding，把格子「往上頂」一點點 */
+    padding: 0 10px 25px 10px; 
     box-sizing: border-box;
   }
   
@@ -79,11 +79,14 @@
     display: flex;
     justify-content: center; 
     
-    /* 核心修改：靠上對齊，讓圖片往上提 */
+    /* 靠上對齊，貼近中線 */
     align-items: flex-start; 
     
-    /* 大幅減少上方 Padding，讓圖片貼近分割線 */
-    padding: 10px 10px 20px 10px; 
+    /* 核心修改：
+       上：10px (貼近中線)
+       下：10px (底部留白縮小，最大化顯示區域) 
+    */
+    padding: 10px 10px 10px 10px; 
     
     box-sizing: border-box;
     overflow: hidden;
@@ -117,9 +120,9 @@
     touch-action: none; 
     background: #fff; 
     
-    /* 維持高度限制，確保不溢出 */
-    max-height: 32vh; 
-    max-width: 32vh; 
+    /* 稍微放寬高度限制，因為底部空間變大了 */
+    max-height: 34vh; 
+    max-width: 34vh; 
     
     justify-self: center; 
     align-self: flex-start; 
@@ -134,8 +137,11 @@
     border-radius: 15px; 
     display: flex; align-items: center; justify-content: center; position: relative;
     overflow: visible; 
-    max-height: 52vh; 
-    max-width: 52vh;
+    
+    /* 因為被 padding 往上頂了，這裡的高度限制可以稍微縮小一點點，避免頂到標題欄 */
+    max-height: 50vh; 
+    max-width: 50vh;
+    
     justify-self: center;
   }
 
