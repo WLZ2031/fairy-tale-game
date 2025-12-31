@@ -14,7 +14,7 @@
     background: #f0f9fa; 
     margin: 0; padding: 0; 
     height: 100vh; width: 100vw;
-    overflow: hidden; 
+    overflow: hidden; /* 禁止滑動 */
     display: flex; flex-direction: column;
   }
 
@@ -50,40 +50,43 @@
   }
 
   /* 
-     === 1. 上方目標區 (60%) === 
+     === 1. 上方目標區 (調整比例為 55%) === 
+     目標：消除頂部紅框空隙，讓格子往上靠
   */
   .game-wrapper:not(.layout-mode-2x2) .panel-target {
-    flex: 6;  
+    flex: 5.5;  /* 從 6 改為 5.5，稍微縮小佔比 */
     order: 1; 
     background: #e0f2f1; 
     border-bottom: 2px solid #b2ebf2;
     display: flex;
     justify-content: center; 
     
-    /* 靠下對齊 */
-    align-items: flex-end; 
+    /* 核心修改：改為 center 或 flex-start 配合 margin-top */
+    align-items: center; 
     
-    /* 預設: 底部推高 5vh，讓格子往上 */
-    padding: 0 10px 5vh 10px; 
+    /* 透過 padding-top 把格子往下推一點點，避免撞到按鈕，但消除大片紅框 */
+    padding: 60px 10px 10px 10px; 
+    
     box-sizing: border-box;
   }
   
   /* 
-     === 2. 下方圖庫區 (40%) === 
+     === 2. 下方圖庫區 (調整比例為 45%) === 
+     目標：給予更多空間，確保圖片不被切掉
   */
   .game-wrapper:not(.layout-mode-2x2) .panel-source {
-    flex: 4;  
+    flex: 4.5;  /* 從 4 改為 4.5，增加空間 */
     order: 2; 
     background: #ffffff; 
     border-top: none;
     display: flex;
     justify-content: center; 
     
-    /* 靠上對齊 */
+    /* 靠上對齊，貼近中線 */
     align-items: flex-start; 
     
-    /* 預設: 頂部緊貼，底部留極小空隙 */
-    padding: 2vh 10px 2vh 10px; 
+    /* 調整 padding，確保圖片有呼吸空間 */
+    padding: 20px 10px 10px 10px; 
     
     box-sizing: border-box;
     overflow: hidden;
@@ -103,7 +106,7 @@
   }
 
   /* 
-     === 圖片與格子尺寸控制 === 
+     === 圖片與格子尺寸控制 (iPad 完美適配) === 
   */
   
   #source img { 
@@ -117,9 +120,10 @@
     touch-action: none; 
     background: #fff; 
     
-    /* 限制下方圖片高度 */
-    max-height: 30vh; 
-    max-width: 30vh; 
+    /* 核心限制：確保圖片高度不超過螢幕的 30% */
+    /* 這樣在 iPad 橫向 (高度較小) 時，圖片會自動縮小以適應高度 */
+    max-height: 28vh; 
+    max-width: 28vh;
     
     justify-self: center; 
     align-self: flex-start; 
@@ -135,9 +139,9 @@
     display: flex; align-items: center; justify-content: center; position: relative;
     overflow: visible; 
     
-    /* 預設高度限制 */
-    max-height: 48vh; 
-    max-width: 48vh;
+    /* 核心限制：格子高度不超過螢幕的 40% */
+    max-height: 40vh; 
+    max-width: 40vh;
     
     justify-self: center;
   }
@@ -189,30 +193,30 @@
   }
   
   /* 
-     === iPad / 平板專屬微調 (核心修改) === 
-     目標：確保底部有留白，且格子可以往上移
+     === iPad 專屬微調 === 
+     確保在 4:3 比例下，格子往上，底部不切
   */
   @media (min-width: 768px) and (max-aspect-ratio: 4/3) {
-      /* 1. 上方區域：大幅增加底部 padding，強迫格子往上飛 */
+      /* 上方區域：稍微加大頂部 padding，確保不撞到按鈕，但又消除過大空隙 */
       .game-wrapper:not(.layout-mode-2x2) .panel-target {
-          padding-bottom: 8vh; /* 增加到 8vh，約 60-80px，推力更強 */
+          padding-top: 80px; /* 避開頂部按鈕 */
+          padding-bottom: 2vh; /* 減少底部推力，讓它自然靠上 */
+          align-items: flex-start; /* 讓格子往上靠 */
       }
       
-      /* 2. 下方區域：稍微增加頂部 padding，確保圖片和分割線不打架 */
+      /* 下方區域：增加顯示空間 */
       .game-wrapper:not(.layout-mode-2x2) .panel-source {
-          padding-top: 3vh; 
+          padding-top: 2vh;
       }
       
-      /* 3. 格子尺寸限制：防止因為上移而撞到頂部 */
+      /* 關鍵：強制限制高度 */
       .slot {
-           max-height: 40vh; /* 縮小一點，騰出空間給上方 */
-           max-width: 40vh;
+           max-height: 38vh; /* 再縮小一點，確保塞得下 */
+           max-width: 38vh;
       }
-      
-      /* 4. 來源圖片限制：確保底部絕對留白 */
       #source img {
-           max-height: 28vh; /* 確保不會切到底部 */
-           max-width: 28vh;
+           max-height: 25vh; /* 確保底部完整顯示 */
+           max-width: 25vh;
       }
   }
 
