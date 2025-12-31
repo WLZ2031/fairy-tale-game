@@ -20,22 +20,22 @@
 
   /* 返回按鈕 */
   .back-arrow {
-    position: absolute; top: 10px; left: 10px; width: 36px; height: 36px;
+    position: absolute; top: 15px; left: 15px; width: 40px; height: 40px;
     background: white; border: 3px solid #000; border-radius: 50%;
     display: none; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 100; font-size: 20px; color: #000; font-weight: 900;
+    cursor: pointer; z-index: 100; font-size: 22px; color: #000; font-weight: 900;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
 
   /* 右上功能按鈕 */
   .top-right-controls {
-    position: absolute; top: 10px; right: 10px; 
-    display: none; gap: 6px; z-index: 100;
+    position: absolute; top: 15px; right: 15px; 
+    display: none; gap: 8px; z-index: 100;
   }
   .icon-btn {
-    width: 36px; height: 36px; border-radius: 50%; border: none;
+    width: 40px; height: 40px; border-radius: 50%; border: none;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
-    font-size: 18px; box-shadow: 0 3px 8px rgba(0,0,0,0.15); transition: 0.2s;
+    font-size: 20px; box-shadow: 0 3px 8px rgba(0,0,0,0.15); transition: 0.2s;
   }
   #toggleLayout { background: #546e7a; color: white; }
   #retry { background: #ffa000; color: white; }
@@ -49,105 +49,172 @@
     flex-direction: column; 
   }
 
-  /* 面板通用樣式 */
-  .panel {
-    flex: 1; 
-    display: flex; align-items: center; justify-content: center;
-    padding: 10px; box-sizing: border-box; 
-    position: relative;
-    width: 100%; height: 50%;
-    transition: all 0.3s ease;
+  /* 
+     === 佈局核心修改 === 
+  */
+
+  /* 1. 上方目標區 (60%) - 極限填充 */
+  .game-wrapper:not(.layout-mode-2x2) .panel-target {
+    flex: 6;  
+    order: 1; 
+    background: #e0f2f1; 
+    border-bottom: 2px solid #b2ebf2;
+    
+    display: flex;
+    justify-content: center; 
+    
+    /* 改用 center，因為格子會變很大，自然會貼近上下邊緣 */
+    align-items: center; 
+    
+    /* 移除多餘 padding，把空間留給格子 */
+    padding: 0; 
   }
   
-  .panel-source { background: #ffffff; border-bottom: 2px solid #e0f2f1; border-right: none; }
-  .panel-target { background: #e0f2f1; }
+  /* 2. 下方圖庫區 (40%) - 貼近分割線 */
+  .game-wrapper:not(.layout-mode-2x2) .panel-source {
+    flex: 4;  
+    order: 2; 
+    background: #ffffff; 
+    border-top: none;
+    
+    display: flex;
+    justify-content: center; 
+    
+    /* 讓圖片往上浮，貼近中間分割線 */
+    align-items: flex-start; 
+    
+    /* 稍微留 10px 呼吸空間，避免完全壓線 */
+    padding-top: 10px; 
+  }
 
   /* 網格系統 */
   .grid-layout { 
     display: grid; 
-    /* 預設 PC/iPad: 1x4 橫排 */
     grid-template-columns: repeat(4, 1fr); 
-    gap: 12px; 
-    width: 95%; max-width: 1000px;
-    justify-content: center; align-content: center;
+    gap: 15px; 
+    
+    /* 關鍵：加大寬度佔比，讓格子可以長得更高 */
+    width: 96%; 
+    max-width: 1400px; /* 放寬最大寬度限制 */
+    
     transition: all 0.3s ease;
   }
 
-  /* 圖片與格子 */
-  #source img, .slot { 
-    width: 100%; 
-    aspect-ratio: 1 / 1; /* 強制正方形 */
-    object-fit: cover; border-radius: 12px; box-sizing: border-box;
-    max-height: 40vh; /* 避免在 1x4 模式太高 */
+  /* --- 來源區圖片 --- */
+  #source img { 
+    width: 100%;  
+    aspect-ratio: 1 / 1; 
+    object-fit: cover; 
+    border-radius: 12px; 
+    box-sizing: border-box;
+    cursor: grab; 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.12); 
+    touch-action: none; 
+    background: #fff; 
+    
+    /* 稍微調大高度限制，讓它飽滿地貼近中間 */
+    max-height: 35vh; 
+    
+    justify-self: center; 
+    transition: transform 0.2s;
   }
 
-  #source img { cursor: grab; box-shadow: 0 4px 10px rgba(0,0,0,0.15); touch-action: none; background: #fff; }
-  #source img:active { cursor: grabbing; transform: scale(1.05); }
+  #source img:active { 
+    transform: scale(1.05); 
+    cursor: grabbing;
+  }
 
+  /* --- 格子樣式 (上方目標) --- */
   .slot { 
-    background: #f8fdff; border: 3px dashed #b2ebf2; 
+    width: 100%; 
+    aspect-ratio: 1 / 1; 
+    background: #f8fdff; 
+    /* 邊框設為 border-box 確保不影響內部圖片計算 */
+    border: 3px dashed #b2ebf2; 
+    box-sizing: border-box; 
+    
+    border-radius: 15px; 
     display: flex; align-items: center; justify-content: center; position: relative;
+    
+    /* 關鍵：允許溢出讓數字顯示，但圖片本身要有圓角 */
+    overflow: visible; 
+    
+    /* 極限高度：讓它幾乎撐滿 60% 的區域 (60vh) */
+    /* 減去一點點邊距，讓它上下剛好貼邊 */
+    max-height: 56vh; 
+    
+    justify-self: center;
   }
-  .slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; }
 
-  /* 數字標籤 */
+  /* --- 目標區圖片 (填滿無空白修正) --- */
+  .slot img { 
+    /* 強制撐滿 */
+    width: 100% !important; 
+    height: 100% !important; 
+    
+    /* 關鍵：Cover 確保圖片裁切填滿，不留白邊 */
+    object-fit: cover; 
+    
+    /* 配合格子的圓角 */
+    border-radius: 12px; 
+    
+    /* 移除可能存在的 margin/padding */
+    margin: 0;
+    padding: 0;
+    display: block;
+
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    z-index: 1; 
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.9); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* --- 數字標籤 --- */
   .number { 
-    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-    background: white; width: 22px; height: 22px;
-    border-radius: 50%; font-size: 14px; font-weight: bold; color: #00838f;
-    display: flex; align-items: center; justify-content: center; z-index: 5;
+    position: absolute; 
+    top: -20px; 
+    left: 50%; transform: translateX(-50%);
+    background: white; 
+    width: 32px; height: 32px; /* 再稍微加大一點，更清楚 */
+    border-radius: 50%; 
+    font-size: 18px; font-weight: 900; color: #00838f;
+    display: flex; align-items: center; justify-content: center; 
     border: 2px solid #b2ebf2;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+    z-index: 10; 
   }
 
-  /* --- 2x2 模式樣式 (左右排列) --- */
-  .game-wrapper.layout-mode-2x2 {
-    flex-direction: row; 
-  }
+  /* --- 2x2 模式樣式 --- */
+  .game-wrapper.layout-mode-2x2 { flex-direction: row; }
   .game-wrapper.layout-mode-2x2 .panel {
-    width: 50%; height: 100%; 
-    border-bottom: none; 
-    padding: 5px; /* 減少內距，讓圖片更大 */
+    flex: 1; 
+    height: 100%; border-bottom: none; padding: 10px; order: 0;
+    align-items: center; 
   }
-  .game-wrapper.layout-mode-2x2 .panel-source {
-    border-right: 2px solid #e0f2f1; 
-  }
-  .game-wrapper.layout-mode-2x2 .grid-layout {
-    grid-template-columns: repeat(2, 1fr); 
-    width: 96%; /* 幾乎佔滿寬度 */
-    gap: 8px; /* 減少間距 */
-  }
+  .game-wrapper.layout-mode-2x2 .panel-source { order: 0; border-right: 2px solid #e0f2f1; padding-top: 0; }
+  .game-wrapper.layout-mode-2x2 .panel-target { order: 1; padding-bottom: 0; }
   
-  /* 針對 2x2 模式放寬高度限制 */
-  .game-wrapper.layout-mode-2x2 #source img, 
-  .game-wrapper.layout-mode-2x2 .slot {
-     max-height: none; /* 取消高度限制，讓它根據寬度自適應 */
+  .game-wrapper.layout-mode-2x2 .grid-layout {
+    grid-template-columns: repeat(2, 1fr); width: 90%; gap: 15px; 
   }
+  .game-wrapper.layout-mode-2x2 #source img, 
+  .game-wrapper.layout-mode-2x2 .slot { max-height: none; }
 
-  /* --- 手機直向自動適配 (強制切換為大圖模式) --- */
+  /* --- 手機直向適配 --- */
   @media (max-width: 768px) and (orientation: portrait) {
     .game-wrapper { flex-direction: row; } 
+    .panel { flex: 1; width: 50%; height: 100%; border-bottom: none; padding: 5px; align-items: center; }
+    .game-wrapper .panel-source { order: 0; border-right: 1px solid #e0f2f1; padding-top: 0; } 
+    .game-wrapper .panel-target { order: 1; padding-bottom: 0; }
     
-    .panel { 
-        width: 50%; height: 100%; 
-        border-bottom: none; 
-        padding: 4px; /* 極限壓縮 padding */
-    }
-    .panel-source { border-right: 1px solid #e0f2f1; }
-    
-    .grid-layout { 
-      grid-template-columns: repeat(2, 1fr); 
-      gap: 6px; /* 手機上間距更小 */
-      width: 98%; /* 寬度撐滿 */
-    }
-    
-    /* 圖片樣式微調 */
-    #source img, .slot {
-        border-radius: 8px; /*稍微減小圓角 */
-        max-height: none; /* 讓圖片可以長大 */
-    }
-
-    /* 數字標籤微調 */
-    .number { width: 18px; height: 18px; font-size: 11px; top: -8px; border-width: 1px; }
+    .grid-layout { grid-template-columns: repeat(2, 1fr); gap: 8px; width: 96%; }
+    .slot { border-radius: 10px; }
+    #source img { max-height: none; }
+    .number { width: 20px; height: 20px; font-size: 12px; top: -10px; border-width: 1px; }
   }
 
   /* 訊息提示 */
@@ -180,9 +247,11 @@
 <div class="menu" id="menu"></div>
 
 <div id="game" class="game-wrapper">
+  <!-- 來源區 -->
   <div class="panel panel-source">
     <div id="source" class="grid-layout"></div>
   </div>
+  <!-- 目標區 -->
   <div class="panel panel-target">
     <div id="targetGrid" class="grid-layout">
       <div class="slot"><div class="number">1</div></div>
@@ -195,7 +264,6 @@
 </div>
 
 <script>
-// (JS 代碼保持不變，核心邏輯相同)
 const sounds = {
   click: new Audio("audio/card-sounds-35956.mp3"),
   drop: new Audio("audio/card-sounds-35956.mp3"),
@@ -219,6 +287,7 @@ let currentStory = null;
 const backBtn = document.getElementById('backBtn');
 const controls = document.getElementById('controls');
 const gameWrapper = document.getElementById('game');
+let draggedItem = null; 
 
 function playSound(name) { if (sounds[name]) { sounds[name].currentTime = 0; sounds[name].play().catch(e => {}); } }
 
@@ -252,10 +321,7 @@ function startGame(story) {
   const source = document.getElementById('source');
   source.innerHTML = '';
   indices.forEach(i => {
-    const img = document.createElement('img');
-    img.src = story.imgs[i];
-    img.draggable = true;
-    img.dataset.index = i;
+    const img = createDraggableImage(story.imgs[i], i);
     source.appendChild(img);
   });
   document.querySelectorAll('.slot').forEach(slot => {
@@ -263,7 +329,31 @@ function startGame(story) {
     slot.innerHTML = '';
     slot.appendChild(num);
   });
-  setupEvents();
+  
+  setupDropZones();
+}
+
+function createDraggableImage(src, index) {
+  const img = document.createElement('img');
+  img.src = src;
+  img.draggable = true;
+  img.dataset.index = index;
+  
+  img.ondragstart = (e) => {
+    draggedItem = img;
+    e.dataTransfer.setData('index', img.dataset.index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+  
+  img.onclick = function() {
+      if (this.parentElement.classList.contains('slot')) {
+          playSound('click');
+          const source = document.getElementById('source');
+          source.appendChild(this);
+      }
+  };
+
+  return img;
 }
 
 function shuffle(array) {
@@ -273,39 +363,52 @@ function shuffle(array) {
   }
 }
 
-function setupEvents() {
-  document.querySelectorAll('#source img').forEach(img => {
-    img.ondragstart = e => e.dataTransfer.setData('index', img.dataset.index);
-  });
+function setupDropZones() {
   document.querySelectorAll('.slot').forEach(slot => {
-    slot.ondragover = e => e.preventDefault();
+    slot.ondragover = e => {
+      e.preventDefault(); 
+      e.dataTransfer.dropEffect = "move";
+    };
+
     slot.ondrop = e => {
       e.preventDefault();
-      const idx = e.dataTransfer.getData('index');
-      const draggedImg = document.querySelector(`#source img[data-index="${idx}"]`) || document.querySelector(`.slot img[data-index="${idx}"]`);
-      if (draggedImg) {
-        playSound('drop');
-        const existing = slot.querySelector('img');
-        if (existing) document.getElementById('source').appendChild(existing);
-        const newImg = draggedImg.cloneNode();
-        newImg.dataset.index = idx;
-        slot.appendChild(newImg);
-        if (draggedImg.parentElement.id === 'source') draggedImg.remove();
-        setupEvents();
+      if (!draggedItem) return;
+
+      playSound('drop');
+      const existingImg = slot.querySelector('img');
+      const oldParent = draggedItem.parentElement;
+
+      if (!existingImg) {
+        slot.appendChild(draggedItem);
+      } 
+      else if (existingImg && existingImg !== draggedItem) {
+        if (oldParent.classList.contains('slot')) {
+           oldParent.appendChild(existingImg);
+           slot.appendChild(draggedItem);
+        } else {
+           document.getElementById('source').appendChild(existingImg);
+           slot.appendChild(draggedItem);
+        }
       }
-    };
-    slot.onclick = function() {
-      const img = this.querySelector('img');
-      if (img) {
-        playSound('click');
-        const returned = img.cloneNode();
-        returned.dataset.index = img.dataset.index;
-        document.getElementById('source').appendChild(returned);
-        img.remove();
-        setupEvents();
-      }
+      draggedItem = null; 
     };
   });
+
+  const sourceZone = document.getElementById('source');
+  sourceZone.ondragover = e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+  sourceZone.ondrop = e => {
+    e.preventDefault();
+    if (!draggedItem) return;
+    
+    if (draggedItem.parentElement !== sourceZone) {
+      playSound('drop');
+      sourceZone.appendChild(draggedItem);
+    }
+    draggedItem = null;
+  };
 }
 
 document.getElementById('check').onclick = () => {
