@@ -63,9 +63,8 @@
     /* 靠下對齊 */
     align-items: flex-end; 
     
-    /* 核心修改：使用 vh 單位，確保在 iPad 上也能「向上推」 */
-    /* 4vh 大約是 30px-40px，足夠讓格子視覺上往上移 */
-    padding: 0 10px 4vh 10px; 
+    /* 預設: 底部推高 5vh，讓格子往上 */
+    padding: 0 10px 5vh 10px; 
     box-sizing: border-box;
   }
   
@@ -80,14 +79,11 @@
     display: flex;
     justify-content: center; 
     
-    /* 靠上對齊，貼近中線 */
+    /* 靠上對齊 */
     align-items: flex-start; 
     
-    /* 核心修改：
-       上：1.5vh (貼近中線)
-       下：1.5vh (極小的底部留白，約 10-15px) 
-    */
-    padding: 1.5vh 10px 1.5vh 10px; 
+    /* 預設: 頂部緊貼，底部留極小空隙 */
+    padding: 2vh 10px 2vh 10px; 
     
     box-sizing: border-box;
     overflow: hidden;
@@ -107,7 +103,7 @@
   }
 
   /* 
-     === 圖片與格子尺寸控制 (iPad 完美適配) === 
+     === 圖片與格子尺寸控制 === 
   */
   
   #source img { 
@@ -121,9 +117,9 @@
     touch-action: none; 
     background: #fff; 
     
-    /* 在 iPad 上，這個限制非常重要 */
-    max-height: 33vh; 
-    max-width: 33vh; 
+    /* 限制下方圖片高度 */
+    max-height: 30vh; 
+    max-width: 30vh; 
     
     justify-self: center; 
     align-self: flex-start; 
@@ -139,7 +135,7 @@
     display: flex; align-items: center; justify-content: center; position: relative;
     overflow: visible; 
     
-    /* 稍微縮小格子最大高度，因為它被往上推了 */
+    /* 預設高度限制 */
     max-height: 48vh; 
     max-width: 48vh;
     
@@ -193,19 +189,30 @@
   }
   
   /* 
-     === iPad / 平板專屬微調 (橫向) === 
-     確保在 4:3 這種比較「方」的螢幕上，上下空間足夠 
+     === iPad / 平板專屬微調 (核心修改) === 
+     目標：確保底部有留白，且格子可以往上移
   */
   @media (min-width: 768px) and (max-aspect-ratio: 4/3) {
+      /* 1. 上方區域：大幅增加底部 padding，強迫格子往上飛 */
       .game-wrapper:not(.layout-mode-2x2) .panel-target {
-          /* iPad 上可以再推高一點點，因為寬度不夠，格子不會長得太巨大 */
-          padding-bottom: 5vh; 
+          padding-bottom: 8vh; /* 增加到 8vh，約 60-80px，推力更強 */
       }
       
+      /* 2. 下方區域：稍微增加頂部 padding，確保圖片和分割線不打架 */
+      .game-wrapper:not(.layout-mode-2x2) .panel-source {
+          padding-top: 3vh; 
+      }
+      
+      /* 3. 格子尺寸限制：防止因為上移而撞到頂部 */
       .slot {
-           /* 限制格子大小，避免太靠近頂部按鈕 */
-           max-height: 45vh;
-           max-width: 45vh;
+           max-height: 40vh; /* 縮小一點，騰出空間給上方 */
+           max-width: 40vh;
+      }
+      
+      /* 4. 來源圖片限制：確保底部絕對留白 */
+      #source img {
+           max-height: 28vh; /* 確保不會切到底部 */
+           max-width: 28vh;
       }
   }
 
