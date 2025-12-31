@@ -20,7 +20,7 @@
 
   /* 返回按鈕 */
   .back-arrow {
-    position: absolute; top: 15px; left: 15px; width: 40px; height: 40px;
+    position: absolute; top: 12px; left: 12px; width: 40px; height: 40px;
     background: white; border: 3px solid #000; border-radius: 50%;
     display: none; align-items: center; justify-content: center;
     cursor: pointer; z-index: 100; font-size: 22px; color: #000; font-weight: 900;
@@ -29,7 +29,7 @@
 
   /* 右上功能按鈕 */
   .top-right-controls {
-    position: absolute; top: 15px; right: 15px; 
+    position: absolute; top: 12px; right: 12px; 
     display: none; gap: 8px; z-index: 100;
   }
   .icon-btn {
@@ -50,57 +50,53 @@
   }
 
   /* 
-     === 佈局核心修改 === 
+     === 1. 上方目標區 (60%) === 
   */
-
-  /* 1. 上方目標區 (60%) - 極限填充 */
   .game-wrapper:not(.layout-mode-2x2) .panel-target {
     flex: 6;  
     order: 1; 
     background: #e0f2f1; 
     border-bottom: 2px solid #b2ebf2;
-    
     display: flex;
     justify-content: center; 
-    
-    /* 改用 center，因為格子會變很大，自然會貼近上下邊緣 */
-    align-items: center; 
-    
-    /* 移除多餘 padding，把空間留給格子 */
-    padding: 0; 
+    align-items: center; /* 垂直置中 */
+    padding: 10px 5px;   /* 增加少量內距作為安全邊界 */
   }
   
-  /* 2. 下方圖庫區 (40%) - 貼近分割線 */
+  /* 
+     === 2. 下方圖庫區 (40%) === 
+  */
   .game-wrapper:not(.layout-mode-2x2) .panel-source {
     flex: 4;  
     order: 2; 
     background: #ffffff; 
     border-top: none;
-    
     display: flex;
     justify-content: center; 
-    
-    /* 讓圖片往上浮，貼近中間分割線 */
-    align-items: flex-start; 
-    
-    /* 稍微留 10px 呼吸空間，避免完全壓線 */
-    padding-top: 10px; 
+    align-items: flex-start; /* 靠上對齊 (貼近中間) */
+    padding: 15px 5px 5px 5px; /* 上方留間隙，左右留安全邊界 */
   }
 
-  /* 網格系統 */
+  /* 
+     === 網格系統 (通用) === 
+  */
   .grid-layout { 
     display: grid; 
     grid-template-columns: repeat(4, 1fr); 
-    gap: 15px; 
-    
-    /* 關鍵：加大寬度佔比，讓格子可以長得更高 */
-    width: 96%; 
-    max-width: 1400px; /* 放寬最大寬度限制 */
-    
+    gap: 12px; /* 稍微縮小間距，把空間留給圖片 */
+    width: 98%; /* 盡量佔滿寬度 */
+    max-width: 1400px;
+    height: 100%; /* 高度跟隨父容器 */
+    align-content: center; /* 內容置中 */
     transition: all 0.3s ease;
   }
 
-  /* --- 來源區圖片 --- */
+  /* 
+     === 圖片與格子尺寸控制 (核心修改) === 
+     目標：大圖、不裁切、保持正方形
+  */
+  
+  /* 下方來源圖片 */
   #source img { 
     width: 100%;  
     aspect-ratio: 1 / 1; 
@@ -112,60 +108,43 @@
     touch-action: none; 
     background: #fff; 
     
-    /* 稍微調大高度限制，讓它飽滿地貼近中間 */
+    /* 雙重限制：
+       1. 高度不能超過 35% 的視窗高度 (垂直限制)
+       2. 寬度自動隨網格縮放 (水平限制)
+       這能確保在寬螢幕和窄螢幕都安全顯示 */
     max-height: 35vh; 
     
     justify-self: center; 
-    transition: transform 0.2s;
+    align-self: flex-start; /* 確保貼近上方邊緣 */
   }
 
-  #source img:active { 
-    transform: scale(1.05); 
-    cursor: grabbing;
-  }
-
-  /* --- 格子樣式 (上方目標) --- */
+  /* 上方格子 */
   .slot { 
     width: 100%; 
     aspect-ratio: 1 / 1; 
     background: #f8fdff; 
-    /* 邊框設為 border-box 確保不影響內部圖片計算 */
     border: 3px dashed #b2ebf2; 
     box-sizing: border-box; 
-    
     border-radius: 15px; 
     display: flex; align-items: center; justify-content: center; position: relative;
-    
-    /* 關鍵：允許溢出讓數字顯示，但圖片本身要有圓角 */
     overflow: visible; 
     
-    /* 極限高度：讓它幾乎撐滿 60% 的區域 (60vh) */
-    /* 減去一點點邊距，讓它上下剛好貼邊 */
-    max-height: 56vh; 
+    /* 格子最大高度限制：
+       確保在 60% 的區域內，扣除標題列或邊距後不溢出 */
+    max-height: 55vh; 
     
     justify-self: center;
   }
 
-  /* --- 目標區圖片 (填滿無空白修正) --- */
+  /* 放入格子後的圖片 */
   .slot img { 
-    /* 強制撐滿 */
     width: 100% !important; 
     height: 100% !important; 
-    
-    /* 關鍵：Cover 確保圖片裁切填滿，不留白邊 */
     object-fit: cover; 
-    
-    /* 配合格子的圓角 */
     border-radius: 12px; 
-    
-    /* 移除可能存在的 margin/padding */
-    margin: 0;
-    padding: 0;
-    display: block;
-
+    margin: 0; padding: 0; display: block;
     animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-    z-index: 1; 
+    position: relative; z-index: 1; 
   }
 
   @keyframes popIn {
@@ -173,48 +152,74 @@
     100% { transform: scale(1); opacity: 1; }
   }
 
-  /* --- 數字標籤 --- */
+  /* 數字標籤 */
   .number { 
     position: absolute; 
-    top: -20px; 
+    top: -18px; 
     left: 50%; transform: translateX(-50%);
     background: white; 
-    width: 32px; height: 32px; /* 再稍微加大一點，更清楚 */
+    width: 28px; height: 28px; 
     border-radius: 50%; 
-    font-size: 18px; font-weight: 900; color: #00838f;
+    font-size: 16px; font-weight: 900; color: #00838f;
     display: flex; align-items: center; justify-content: center; 
     border: 2px solid #b2ebf2;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
     z-index: 10; 
   }
 
-  /* --- 2x2 模式樣式 --- */
+  /* 
+     === 媒體查詢：針對寬高比極端的設備優化 === 
+  */
+
+  /* 1. 平板/寬螢幕手機 (橫向空間足夠) */
+  @media (min-aspect-ratio: 4/3) {
+    .grid-layout {
+      gap: 20px; /* 空間夠，間距加大 */
+    }
+  }
+
+  /* 2. 手機/窄螢幕 (直向，寬度是瓶頸) */
+  @media (max-aspect-ratio: 1/1) {
+    /* 在窄螢幕上，寬度決定高度。
+       為了防止 1x4 排列時圖片太小，我們可以適度縮小間距 */
+    .grid-layout {
+      gap: 8px; 
+      width: 98%;
+    }
+    
+    /* 調整數字球大小，避免遮擋太多 */
+    .number {
+      width: 24px; height: 24px; font-size: 14px; top: -14px;
+    }
+    
+    /* 針對非常窄的手機，可能需要強制切換佈局 (這裡保持您要求的 1x4 優先，但在 JS 可控制) */
+  }
+
+  /* 
+     === 2x2 模式 (橫向排列) === 
+  */
   .game-wrapper.layout-mode-2x2 { flex-direction: row; }
   .game-wrapper.layout-mode-2x2 .panel {
-    flex: 1; 
-    height: 100%; border-bottom: none; padding: 10px; order: 0;
-    align-items: center; 
+    flex: 1; height: 100%; border-bottom: none; padding: 10px; order: 0; align-items: center; 
   }
   .game-wrapper.layout-mode-2x2 .panel-source { order: 0; border-right: 2px solid #e0f2f1; padding-top: 0; }
   .game-wrapper.layout-mode-2x2 .panel-target { order: 1; padding-bottom: 0; }
-  
   .game-wrapper.layout-mode-2x2 .grid-layout {
-    grid-template-columns: repeat(2, 1fr); width: 90%; gap: 15px; 
+    grid-template-columns: repeat(2, 1fr); width: 92%; gap: 15px; 
   }
   .game-wrapper.layout-mode-2x2 #source img, 
-  .game-wrapper.layout-mode-2x2 .slot { max-height: none; }
+  .game-wrapper.layout-mode-2x2 .slot { max-height: 40vh; } /* 2x2 限制高度 */
 
-  /* --- 手機直向適配 --- */
-  @media (max-width: 768px) and (orientation: portrait) {
-    .game-wrapper { flex-direction: row; } 
-    .panel { flex: 1; width: 50%; height: 100%; border-bottom: none; padding: 5px; align-items: center; }
-    .game-wrapper .panel-source { order: 0; border-right: 1px solid #e0f2f1; padding-top: 0; } 
-    .game-wrapper .panel-target { order: 1; padding-bottom: 0; }
-    
-    .grid-layout { grid-template-columns: repeat(2, 1fr); gap: 8px; width: 96%; }
-    .slot { border-radius: 10px; }
-    #source img { max-height: none; }
-    .number { width: 20px; height: 20px; font-size: 12px; top: -10px; border-width: 1px; }
+
+  /* 手機直向強制適配 (如果螢幕太窄，強制切換成 2x2 或優化 1x4) */
+  @media (max-width: 600px) and (orientation: portrait) {
+    /* 這裡保持 1x4 結構，但利用 CSS Grid 確保不溢出 */
+    .game-wrapper:not(.layout-mode-2x2) .grid-layout {
+        /* 如果 4 個橫排太擠，可以讓它自動縮小 */
+        width: 100%; 
+        padding: 0 5px;
+        box-sizing: border-box;
+    }
   }
 
   /* 訊息提示 */
