@@ -14,7 +14,7 @@
     background: #f0f9fa; 
     margin: 0; padding: 0; 
     height: 100vh; width: 100vw;
-    overflow: hidden;
+    overflow: hidden; 
     display: flex; flex-direction: column;
   }
 
@@ -59,8 +59,9 @@
     border-bottom: 2px solid #b2ebf2;
     display: flex;
     justify-content: center; 
-    align-items: center; /* 垂直置中 */
-    padding: 10px 5px;   /* 增加少量內距作為安全邊界 */
+    align-items: center; 
+    padding: 10px;
+    box-sizing: border-box;
   }
   
   /* 
@@ -73,32 +74,31 @@
     border-top: none;
     display: flex;
     justify-content: center; 
-    align-items: flex-start; /* 靠上對齊 (貼近中間) */
-    padding: 15px 5px 5px 5px; /* 上方留間隙，左右留安全邊界 */
+    align-items: flex-start; 
+    padding: 15px 10px 20px 10px; 
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   /* 
-     === 網格系統 (通用) === 
+     === 網格系統 === 
   */
   .grid-layout { 
     display: grid; 
     grid-template-columns: repeat(4, 1fr); 
-    gap: 12px; /* 稍微縮小間距，把空間留給圖片 */
-    width: 98%; /* 盡量佔滿寬度 */
+    gap: 15px; 
+    width: 100%; 
     max-width: 1400px;
-    height: 100%; /* 高度跟隨父容器 */
-    align-content: center; /* 內容置中 */
+    margin: 0 auto;
     transition: all 0.3s ease;
   }
 
   /* 
-     === 圖片與格子尺寸控制 (核心修改) === 
-     目標：大圖、不裁切、保持正方形
+     === 圖片與格子尺寸控制 (iPad 防裁切) === 
   */
   
-  /* 下方來源圖片 */
   #source img { 
-    width: 100%;  
+    width: 100%;
     aspect-ratio: 1 / 1; 
     object-fit: cover; 
     border-radius: 12px; 
@@ -108,17 +108,14 @@
     touch-action: none; 
     background: #fff; 
     
-    /* 雙重限制：
-       1. 高度不能超過 35% 的視窗高度 (垂直限制)
-       2. 寬度自動隨網格縮放 (水平限制)
-       這能確保在寬螢幕和窄螢幕都安全顯示 */
-    max-height: 35vh; 
+    /* 核心限制：確保不溢出 */
+    max-height: 32vh; 
+    max-width: 32vh; 
     
     justify-self: center; 
-    align-self: flex-start; /* 確保貼近上方邊緣 */
+    align-self: flex-start; 
   }
 
-  /* 上方格子 */
   .slot { 
     width: 100%; 
     aspect-ratio: 1 / 1; 
@@ -128,18 +125,16 @@
     border-radius: 15px; 
     display: flex; align-items: center; justify-content: center; position: relative;
     overflow: visible; 
-    
-    /* 格子最大高度限制：
-       確保在 60% 的區域內，扣除標題列或邊距後不溢出 */
-    max-height: 55vh; 
-    
+    max-height: 52vh; 
+    max-width: 52vh;
     justify-self: center;
   }
 
-  /* 放入格子後的圖片 */
   .slot img { 
     width: 100% !important; 
     height: 100% !important; 
+    max-height: none;
+    max-width: none;
     object-fit: cover; 
     border-radius: 12px; 
     margin: 0; padding: 0; display: block;
@@ -152,13 +147,12 @@
     100% { transform: scale(1); opacity: 1; }
   }
 
-  /* 數字標籤 */
   .number { 
     position: absolute; 
-    top: -18px; 
+    top: -20px; 
     left: 50%; transform: translateX(-50%);
     background: white; 
-    width: 28px; height: 28px; 
+    width: 30px; height: 30px; 
     border-radius: 50%; 
     font-size: 16px; font-weight: 900; color: #00838f;
     display: flex; align-items: center; justify-content: center; 
@@ -167,37 +161,7 @@
     z-index: 10; 
   }
 
-  /* 
-     === 媒體查詢：針對寬高比極端的設備優化 === 
-  */
-
-  /* 1. 平板/寬螢幕手機 (橫向空間足夠) */
-  @media (min-aspect-ratio: 4/3) {
-    .grid-layout {
-      gap: 20px; /* 空間夠，間距加大 */
-    }
-  }
-
-  /* 2. 手機/窄螢幕 (直向，寬度是瓶頸) */
-  @media (max-aspect-ratio: 1/1) {
-    /* 在窄螢幕上，寬度決定高度。
-       為了防止 1x4 排列時圖片太小，我們可以適度縮小間距 */
-    .grid-layout {
-      gap: 8px; 
-      width: 98%;
-    }
-    
-    /* 調整數字球大小，避免遮擋太多 */
-    .number {
-      width: 24px; height: 24px; font-size: 14px; top: -14px;
-    }
-    
-    /* 針對非常窄的手機，可能需要強制切換佈局 (這裡保持您要求的 1x4 優先，但在 JS 可控制) */
-  }
-
-  /* 
-     === 2x2 模式 (橫向排列) === 
-  */
+  /* 2x2 模式 */
   .game-wrapper.layout-mode-2x2 { flex-direction: row; }
   .game-wrapper.layout-mode-2x2 .panel {
     flex: 1; height: 100%; border-bottom: none; padding: 10px; order: 0; align-items: center; 
@@ -208,21 +172,14 @@
     grid-template-columns: repeat(2, 1fr); width: 92%; gap: 15px; 
   }
   .game-wrapper.layout-mode-2x2 #source img, 
-  .game-wrapper.layout-mode-2x2 .slot { max-height: 40vh; } /* 2x2 限制高度 */
-
-
-  /* 手機直向強制適配 (如果螢幕太窄，強制切換成 2x2 或優化 1x4) */
-  @media (max-width: 600px) and (orientation: portrait) {
-    /* 這裡保持 1x4 結構，但利用 CSS Grid 確保不溢出 */
-    .game-wrapper:not(.layout-mode-2x2) .grid-layout {
-        /* 如果 4 個橫排太擠，可以讓它自動縮小 */
-        width: 100%; 
-        padding: 0 5px;
-        box-sizing: border-box;
-    }
+  .game-wrapper.layout-mode-2x2 .slot { 
+      max-height: 42vh; max-width: 42vh;
   }
 
-  /* 訊息提示 */
+  @media (max-width: 600px) and (orientation: portrait) {
+    .grid-layout { gap: 8px; width: 98%; }
+  }
+
   .message { 
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     font-size: 40px; font-weight: bold; pointer-events: none; z-index: 200;
@@ -231,7 +188,6 @@
   .correct { color: #00c853; }
   .wrong { color: #d50000; }
 
-  /* 目錄頁 */
   .menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 40px 20px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
   .story-btn { width: 140px; background: white; border-radius: 20px; padding: 10px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s; }
   .story-btn:active { transform: scale(0.95); }
@@ -252,8 +208,8 @@
 <div class="menu" id="menu"></div>
 
 <div id="game" class="game-wrapper">
-  <!-- 來源區 -->
-  <div class="panel panel-source">
+  <!-- 來源區 (擴大 Drop 區域至整個 Panel) -->
+  <div class="panel panel-source" id="sourcePanelArea">
     <div id="source" class="grid-layout"></div>
   </div>
   <!-- 目標區 -->
@@ -369,6 +325,7 @@ function shuffle(array) {
 }
 
 function setupDropZones() {
+  // 1. 格子區 (Target) 的 Drop 邏輯
   document.querySelectorAll('.slot').forEach(slot => {
     slot.ondragover = e => {
       e.preventDefault(); 
@@ -399,18 +356,24 @@ function setupDropZones() {
     };
   });
 
-  const sourceZone = document.getElementById('source');
-  sourceZone.ondragover = e => {
+  // 2. 來源區 (Source) 的 Drop 邏輯 - 核心修改：改為監聽整個 Panel
+  const sourcePanelArea = document.getElementById('sourcePanelArea');
+  const sourceGrid = document.getElementById('source');
+
+  sourcePanelArea.ondragover = e => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
   };
-  sourceZone.ondrop = e => {
+  
+  sourcePanelArea.ondrop = e => {
     e.preventDefault();
     if (!draggedItem) return;
     
-    if (draggedItem.parentElement !== sourceZone) {
+    // 只要圖片不是已經在 source 裡，就放回去
+    // 這裡我們直接把圖片塞回 #source 網格容器，而不是外層的 panel
+    if (draggedItem.parentElement !== sourceGrid) {
       playSound('drop');
-      sourceZone.appendChild(draggedItem);
+      sourceGrid.appendChild(draggedItem);
     }
     draggedItem = null;
   };
