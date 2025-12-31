@@ -63,8 +63,9 @@
     /* 靠下對齊 */
     align-items: flex-end; 
     
-    /* 核心修改：增加底部 padding，把格子「往上頂」一點點 */
-    padding: 0 10px 25px 10px; 
+    /* 核心修改：使用 vh 單位，確保在 iPad 上也能「向上推」 */
+    /* 4vh 大約是 30px-40px，足夠讓格子視覺上往上移 */
+    padding: 0 10px 4vh 10px; 
     box-sizing: border-box;
   }
   
@@ -83,10 +84,10 @@
     align-items: flex-start; 
     
     /* 核心修改：
-       上：10px (貼近中線)
-       下：10px (底部留白縮小，最大化顯示區域) 
+       上：1.5vh (貼近中線)
+       下：1.5vh (極小的底部留白，約 10-15px) 
     */
-    padding: 10px 10px 10px 10px; 
+    padding: 1.5vh 10px 1.5vh 10px; 
     
     box-sizing: border-box;
     overflow: hidden;
@@ -106,7 +107,7 @@
   }
 
   /* 
-     === 圖片與格子尺寸控制 (iPad 防裁切) === 
+     === 圖片與格子尺寸控制 (iPad 完美適配) === 
   */
   
   #source img { 
@@ -120,9 +121,9 @@
     touch-action: none; 
     background: #fff; 
     
-    /* 稍微放寬高度限制，因為底部空間變大了 */
-    max-height: 34vh; 
-    max-width: 34vh; 
+    /* 在 iPad 上，這個限制非常重要 */
+    max-height: 33vh; 
+    max-width: 33vh; 
     
     justify-self: center; 
     align-self: flex-start; 
@@ -138,9 +139,9 @@
     display: flex; align-items: center; justify-content: center; position: relative;
     overflow: visible; 
     
-    /* 因為被 padding 往上頂了，這裡的高度限制可以稍微縮小一點點，避免頂到標題欄 */
-    max-height: 50vh; 
-    max-width: 50vh;
+    /* 稍微縮小格子最大高度，因為它被往上推了 */
+    max-height: 48vh; 
+    max-width: 48vh;
     
     justify-self: center;
   }
@@ -189,6 +190,23 @@
   .game-wrapper.layout-mode-2x2 #source img, 
   .game-wrapper.layout-mode-2x2 .slot { 
       max-height: 42vh; max-width: 42vh;
+  }
+  
+  /* 
+     === iPad / 平板專屬微調 (橫向) === 
+     確保在 4:3 這種比較「方」的螢幕上，上下空間足夠 
+  */
+  @media (min-width: 768px) and (max-aspect-ratio: 4/3) {
+      .game-wrapper:not(.layout-mode-2x2) .panel-target {
+          /* iPad 上可以再推高一點點，因為寬度不夠，格子不會長得太巨大 */
+          padding-bottom: 5vh; 
+      }
+      
+      .slot {
+           /* 限制格子大小，避免太靠近頂部按鈕 */
+           max-height: 45vh;
+           max-width: 45vh;
+      }
   }
 
   @media (max-width: 600px) and (orientation: portrait) {
